@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — Supervision IoT Silos</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: #0b1929;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(26,127,163,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,127,163,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Glow orbs */
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      opacity: 0.15;
+    }
+    .glow-1 { width: 400px; height: 400px; background: #1a7fa3; top: -100px; right: -80px; }
+    .glow-2 { width: 300px; height: 300px; background: #8e44ad; bottom: -80px; left: -60px; }
+
+    .auth-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      width: 420px;
+      max-width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(12px);
+    }
+
+    .auth-header {
+      padding: 28px 28px 22px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .auth-icon {
+      width: 52px; height: 52px;
+      background: rgba(26,127,163,0.2);
+      border: 1px solid rgba(26,127,163,0.3);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      font-size: 24px;
+      color: #7dd3fc;
+      margin-bottom: 14px;
+    }
+    .auth-logo { font-size: 20px; font-weight: 700; color: #fff; }
+    .auth-tagline { font-size: 11px; color: #64748b; letter-spacing: 0.8px; text-transform: uppercase; margin-top: 4px; }
+    .auth-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .dot.on { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .dot.off { background: #334155; }
+    .dot-label { font-size: 11px; color: #475569; margin-left: 2px; }
+
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+    .auth-tab:hover { color: #7dd3fc; }
+    .auth-tab.active { color: #7dd3fc; border-bottom-color: #1a7fa3; font-weight: 600; }
+
+    .auth-body { padding: 24px 28px 28px; }
+    .auth-panel { display: none; }
+    .auth-panel.active { display: block; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12.5px; font-weight: 500; margin-bottom: 5px; color: #94a3b8; }
+    .form-control {
+      width: 100%; padding: 9px 11px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 7px;
+      font-size: 13px;
+      color: #e2e8f0;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus { outline: none; border-color: #1a7fa3; box-shadow: 0 0 0 3px rgba(26,127,163,0.15); }
+    .form-control::placeholder { color: #475569; }
+    .form-control option { background: #1e293b; color: #e2e8f0; }
+
+    .input-icon { position: relative; }
+    .input-icon i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #475569; font-size: 15px; }
+    .input-icon .form-control { padding-left: 32px; }
+
+    .forgot { text-align: right; margin-top: -6px; margin-bottom: 14px; }
+    .forgot a { font-size: 12px; color: #1a7fa3; text-decoration: none; }
+    .forgot a:hover { text-decoration: underline; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, #0d4f6e, #1a7fa3);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      box-shadow: 0 4px 14px rgba(26,127,163,0.3);
+    }
+    .btn-submit:hover { opacity: 0.9; box-shadow: 0 6px 20px rgba(26,127,163,0.4); }
+
+    .demo-hint {
+      background: rgba(26,127,163,0.08);
+      border: 1px solid rgba(26,127,163,0.2);
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #7dd3fc;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+    .demo-hint i { margin-top: 1px; flex-shrink: 0; }
+
+    .footer-note { text-align: center; margin-top: 18px; font-size: 11.5px; color: #475569; }
+    .footer-note a { color: #1a7fa3; text-decoration: none; }
+
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .select-control {
+      width: 100%; padding: 9px 11px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 7px;
+      font-size: 13px;
+      color: #e2e8f0;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .select-control:focus { outline: none; border-color: #1a7fa3; }
+
+    .back-home {
+      position: fixed; top: 16px; left: 16px;
+      display: flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.5);
+      font-size: 12.5px;
+      text-decoration: none;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: background 0.15s, color 0.15s;
+      z-index: 10;
+    }
+    .back-home:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); }
+  </style>
+</head>
+<body>
+
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
+  <a class="back-home" href="../index.html"><i class="ri-arrow-left-line"></i> Accueil</a>
+
+  <div class="auth-box">
+
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="auth-icon"><i class="ri-sensor-line"></i></div>
+      <div class="auth-logo">Supervision IoT Silos</div>
+      <div class="auth-tagline">SMBSA Ezahra — Monitoring temps réel</div>
+      <div class="auth-dots">
+        <div class="dot on"></div>
+        <div class="dot on"></div>
+        <div class="dot on"></div>
+        <span class="dot-label">3 silos connectés</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')"><i class="ri-login-box-line"></i> &nbsp;Connexion</div>
+      <div class="auth-tab" onclick="switchTab('signup')"><i class="ri-user-add-line"></i> &nbsp;Créer un compte</div>
+    </div>
+
+    <!-- Body -->
+    <div class="auth-body">
+
+      <!-- LOGIN PANEL -->
+      <div class="auth-panel active" id="panel-login">
+        <div class="demo-hint">
+          <i class="ri-information-line"></i>
+          <span><strong>Démo</strong> — saisissez n'importe quelles valeurs et cliquez Se connecter.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adresse email</label>
+          <div class="input-icon">
+            <i class="ri-mail-line"></i>
+            <input class="form-control" type="email" placeholder="email@smbsa-ezahra.tn" value="superviseur@smbsa-ezahra.tn">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe</label>
+          <div class="input-icon">
+            <i class="ri-lock-line"></i>
+            <input class="form-control" type="password" placeholder="••••••••" value="••••••••">
+          </div>
+        </div>
+        <div class="forgot"><a href="#">Mot de passe oublié ?</a></div>
+        <button class="btn-submit" onclick="window.location.href='index.html'">
+          <i class="ri-sensor-line"></i> Accéder au monitoring
+        </button>
+        <div class="footer-note">
+          Pas encore de compte ? <a href="#" onclick="switchTab('signup');return false">Créer un compte</a>
+        </div>
+      </div>
+
+      <!-- SIGNUP PANEL -->
+      <div class="auth-panel" id="panel-signup">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Prénom</label>
+            <input class="form-control" type="text" placeholder="Prénom">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom</label>
+            <input class="form-control" type="text" placeholder="Nom">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adresse email</label>
+          <div class="input-icon">
+            <i class="ri-mail-line"></i>
+            <input class="form-control" type="email" placeholder="email@smbsa-ezahra.tn">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rôle</label>
+          <select class="select-control">
+            <option>— Sélectionner un rôle —</option>
+            <option>Superviseur IoT</option>
+            <option>Technicien terrain</option>
+            <option>Administrateur système</option>
+            <option>Direction</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe</label>
+          <div class="input-icon">
+            <i class="ri-lock-line"></i>
+            <input class="form-control" type="password" placeholder="Minimum 8 caractères">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmer le mot de passe</label>
+          <div class="input-icon">
+            <i class="ri-lock-2-line"></i>
+            <input class="form-control" type="password" placeholder="Répéter le mot de passe">
+          </div>
+        </div>
+        <button class="btn-submit" onclick="window.location.href='index.html'">
+          <i class="ri-user-add-line"></i> Créer le compte
+        </button>
+        <div class="footer-note">
+          Déjà un compte ? <a href="#" onclick="switchTab('login');return false">Se connecter</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
+      });
+      document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+      document.getElementById('panel-signup').classList.toggle('active', tab === 'signup');
+    }
+  </script>
+</body>
+</html>

@@ -6,6 +6,23 @@
   <title>Employés & Paie — ERP Ezahra</title>
   <link rel="stylesheet" href="../css/style.css">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    .bul-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+    .bul-table th { background:var(--primary); color:white; padding:7px 10px; font-weight:600; }
+    .bul-table th:not(:first-child) { text-align:right; }
+    .bul-table td { padding:6px 10px; border-bottom:1px solid #f1f5f9; }
+    .bul-table td:not(:first-child) { text-align:right; }
+    .bul-section-gains  { background:#e0f2fe; }
+    .bul-section-ret    { background:#fee2e2; }
+    .bul-section-gains td, .bul-section-ret td {
+      padding:5px 10px; font-size:11px; font-weight:700;
+      text-transform:uppercase; letter-spacing:0.5px;
+    }
+    .bul-total-brut td  { background:#dbeafe; font-weight:700; color:#1e40af; }
+    .bul-total-ret td   { background:#fee2e2; font-weight:700; color:#b91c1c; }
+    .bul-total-brut td:last-child, .bul-total-ret td:last-child { font-size:14px; }
+    .bul-muted { color:var(--text-muted); }
+  </style>
 </head>
 <body>
 <div class="app-layout">
@@ -51,6 +68,7 @@
           </div>
         </div>
 
+        <!-- ===== LISTE EMPLOYÉS ===== -->
         <div id="tab-liste" class="tab-content active" data-group="emp">
           <div class="card-body">
             <div class="section-header">
@@ -66,39 +84,72 @@
           </div>
         </div>
 
+        <!-- ===== BULLETINS DE PAIE ===== -->
         <div id="tab-paie" class="tab-content" data-group="emp">
           <div class="card-body">
-            <div class="section-header">
-              <h3>Bulletins de paie — Mai 2026</h3>
-              <div class="flex gap-8">
+
+            <!-- Navigation mois -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <button class="btn btn-light btn-sm" id="paie-prev" onclick="changeMoisPaie(-1)">
+                  <i class="ri-arrow-left-s-line"></i> Mois préc.
+                </button>
+                <div style="min-width:150px;text-align:center;padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#f8fafc">
+                  <span id="paie-label" style="font-size:14px;font-weight:700;color:var(--primary)"></span>
+                </div>
+                <button class="btn btn-light btn-sm" id="paie-next" onclick="changeMoisPaie(+1)">
+                  Mois suiv. <i class="ri-arrow-right-s-line"></i>
+                </button>
+              </div>
+              <div style="display:flex;gap:8px">
                 <button class="btn btn-light btn-sm"><i class="ri-file-excel-line"></i>Export CNSS</button>
                 <button class="btn btn-primary btn-sm"><i class="ri-play-circle-line"></i>Générer tous</button>
               </div>
             </div>
+
+            <!-- KPIs du mois -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+              <div style="text-align:center">
+                <div style="font-size:17px;font-weight:700;color:var(--primary)" id="kpi-brut-total">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:2px">Masse salariale brute</div>
+              </div>
+              <div style="text-align:center;border-left:1px solid var(--border)">
+                <div style="font-size:17px;font-weight:700;color:var(--danger)" id="kpi-retenues-total">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:2px">Total retenues</div>
+              </div>
+              <div style="text-align:center;border-left:1px solid var(--border)">
+                <div style="font-size:17px;font-weight:700;color:var(--accent)" id="kpi-net-total">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:2px">Total net à payer</div>
+              </div>
+              <div style="text-align:center;border-left:1px solid var(--border)">
+                <div style="font-size:17px;font-weight:700;color:var(--warning)" id="kpi-cout-emp">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:2px">Coût employeur total</div>
+              </div>
+            </div>
+
+            <!-- Tableau récapitulatif -->
             <div class="table-wrapper">
               <table>
-                <thead><tr><th>Employé</th><th>Poste</th><th>Salaire brut</th><th>CNSS (salarié 9,18%)</th><th>IRPP</th><th>Net à payer</th><th>Bulletin</th></tr></thead>
-                <tbody>
-                  ${MOCK.employes.map(e => {
-                    const cnss = (e.salaire * 0.0918).toFixed(3);
-                    const irpp = (e.salaire > 1000 ? (e.salaire - 1000) * 0.10 : 0).toFixed(3);
-                    const net = (e.salaire - parseFloat(cnss) - parseFloat(irpp)).toFixed(3);
-                    return `<tr>
-                      <td class="font-semi">${e.nom}</td>
-                      <td class="text-muted text-sm">${e.poste}</td>
-                      <td>${fmtInt(e.salaire)} TND</td>
-                      <td class="text-danger">${cnss} TND</td>
-                      <td class="text-danger">${irpp} TND</td>
-                      <td class="text-success font-semi">${net} TND</td>
-                      <td><button class="btn btn-xs btn-light"><i class="ri-printer-line"></i>PDF</button></td>
-                    </tr>`;
-                  }).join('')}
-                </tbody>
+                <thead><tr>
+                  <th>Employé</th>
+                  <th style="text-align:right">Salaire base</th>
+                  <th style="text-align:right">Primes</th>
+                  <th style="text-align:right">Total brut</th>
+                  <th style="text-align:right">CNSS (9,18%)</th>
+                  <th style="text-align:right">IRPP</th>
+                  <th style="text-align:right">Net à payer</th>
+                  <th>Statut</th>
+                  <th></th>
+                </tr></thead>
+                <tbody id="tbl-paie-body"></tbody>
+                <tfoot id="tbl-paie-foot"></tfoot>
               </table>
             </div>
+
           </div>
         </div>
 
+        <!-- ===== DÉCLARATION CNSS ===== -->
         <div id="tab-cnss" class="tab-content" data-group="emp">
           <div class="card-body">
             <div class="alert alert-success mb-16"><i class="ri-check-line"></i>Déclaration CNSS Mai 2026 prête — échéance le 15/06/2026</div>
@@ -116,6 +167,7 @@
           </div>
         </div>
 
+        <!-- ===== CONGÉS & POINTAGE ===== -->
         <div id="tab-conges" class="tab-content" data-group="emp">
           <div class="card-body">
             <div class="section-header">
@@ -131,6 +183,154 @@
             </table>
           </div>
         </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL BULLETIN DE PAIE ===== -->
+<div class="modal-overlay" id="modal-bulletin">
+  <div class="modal" style="width:700px;max-width:95vw">
+    <div class="modal-header">
+      <h3><i class="ri-file-text-line text-primary"></i> &nbsp;Bulletin de paie</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-xs btn-light"><i class="ri-printer-line"></i> Imprimer</button>
+        <button class="modal-close" onclick="closeModal('modal-bulletin')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div style="padding:22px 26px">
+
+        <!-- En-tête document -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid var(--primary);margin-bottom:14px">
+          <div>
+            <div style="font-size:17px;font-weight:800;color:var(--primary);letter-spacing:1.5px">SMBSA EZAHRA</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Ouled Salah, Ksour Essef, Mahdia 5116</div>
+            <div style="font-size:11px;color:var(--text-muted)">Matricule fiscal : 029083/W/P/M</div>
+            <div style="font-size:11px;color:var(--text-muted)">Tél : 73 xxx xxx</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.5px">BULLETIN DE PAIE</div>
+            <div style="font-size:15px;font-weight:800;color:var(--primary);margin-top:4px" id="bul-periode"></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Société Mutuelle de Base</div>
+          </div>
+        </div>
+
+        <!-- Infos employé -->
+        <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:5px 32px">
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">Nom & Prénom</span><strong id="bul-nom"></strong></div>
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">N° CNSS</span><strong id="bul-cnss-num" style="font-family:'Courier New'"></strong></div>
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">Poste</span><span id="bul-poste"></span></div>
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">CIN</span><span id="bul-cin" style="font-family:'Courier New'"></span></div>
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">Département</span><span id="bul-dept"></span></div>
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">Date embauche</span><span id="bul-embauche"></span></div>
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">Type contrat</span><span id="bul-contrat"></span></div>
+          <div style="display:flex;gap:6px;font-size:12px"><span style="color:var(--text-muted);width:96px;flex-shrink:0">Ancienneté</span><span id="bul-anc"></span></div>
+        </div>
+
+        <!-- Tableau rubriques -->
+        <table class="bul-table" style="margin-bottom:0">
+          <thead>
+            <tr>
+              <th style="text-align:left">Rubrique</th>
+              <th>Base (TND)</th>
+              <th>Taux / Quantité</th>
+              <th>Montant (TND)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- GAINS -->
+            <tr class="bul-section-gains">
+              <td colspan="4" style="color:#0369a1"><i class="ri-arrow-up-circle-line"></i> &nbsp;GAINS</td>
+            </tr>
+            <tr>
+              <td>Salaire de base</td>
+              <td id="bul-base-col" class="bul-muted"></td>
+              <td class="bul-muted">1 mois</td>
+              <td id="bul-base-mnt" style="font-weight:600"></td>
+            </tr>
+            <tr id="bul-anc-row">
+              <td>Prime d'ancienneté</td>
+              <td id="bul-anc-base" class="bul-muted"></td>
+              <td id="bul-anc-pct" class="bul-muted"></td>
+              <td id="bul-anc-mnt" style="font-weight:600"></td>
+            </tr>
+            <tr>
+              <td>Prime de transport</td>
+              <td class="bul-muted">—</td>
+              <td class="bul-muted">Forfait mensuel</td>
+              <td id="bul-transport" style="font-weight:600"></td>
+            </tr>
+            <tr id="bul-hsup-row">
+              <td>Heures supplémentaires (125%)</td>
+              <td id="bul-hsup-base" class="bul-muted"></td>
+              <td id="bul-hsup-nb" class="bul-muted"></td>
+              <td id="bul-hsup" style="font-weight:600;color:var(--accent)"></td>
+            </tr>
+            <tr class="bul-total-brut">
+              <td colspan="3">TOTAL BRUT</td>
+              <td id="bul-brut"></td>
+            </tr>
+            <!-- RETENUES -->
+            <tr class="bul-section-ret">
+              <td colspan="4" style="color:#b91c1c"><i class="ri-arrow-down-circle-line"></i> &nbsp;RETENUES</td>
+            </tr>
+            <tr>
+              <td>CNSS — Part salariale</td>
+              <td id="bul-cnss-base" class="bul-muted"></td>
+              <td class="bul-muted">9,180%</td>
+              <td id="bul-cnss-mnt" style="font-weight:600;color:var(--danger)"></td>
+            </tr>
+            <tr>
+              <td>IRPP (retenue à la source)</td>
+              <td class="bul-muted">—</td>
+              <td class="bul-muted">Barème progressif annualisé</td>
+              <td id="bul-irpp-mnt" style="font-weight:600;color:var(--danger)"></td>
+            </tr>
+            <tr class="bul-total-ret">
+              <td colspan="3">TOTAL RETENUES</td>
+              <td id="bul-retenues-total"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Net à payer -->
+        <div style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);color:white;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700;letter-spacing:0.8px">NET À PAYER</div>
+            <div style="font-size:10px;opacity:0.7;margin-top:2px">En lettres : <span id="bul-net-lettres"></span></div>
+          </div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px"><span id="bul-net"></span> <span style="font-size:16px">TND</span></div>
+        </div>
+
+        <!-- Charges patronales -->
+        <div style="border:1px solid #fde68a;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:16px">
+          <div style="background:#fef9c3;padding:5px 12px;font-size:11px;font-weight:700;color:#713f12;text-transform:uppercase;letter-spacing:0.5px">
+            <i class="ri-building-line"></i> &nbsp;Charges patronales (non déduites du salarié)
+          </div>
+          <div style="padding:8px 12px;display:flex;gap:28px;font-size:12px;flex-wrap:wrap">
+            <div><span class="bul-muted">CNSS patronale (16,57%) :</span> &nbsp;<strong id="bul-cnss-pat"></strong> TND</div>
+            <div><span class="bul-muted">Accident de travail (0,50%) :</span> &nbsp;<strong id="bul-at"></strong> TND</div>
+            <div style="margin-left:auto;font-size:13px"><span class="bul-muted">Coût total employeur :</span> &nbsp;<strong id="bul-cout" style="color:var(--warning)"></strong> TND</div>
+          </div>
+        </div>
+
+        <!-- Signatures -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px">
+          <div style="border-top:1px solid var(--border);padding-top:8px;text-align:center">
+            <div style="font-size:10.5px;color:var(--text-muted);margin-bottom:22px">Signature et cachet de l'employeur</div>
+            <div style="font-size:11px;font-weight:600">SMBSA Ezahra</div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:8px;text-align:center">
+            <div style="font-size:10.5px;color:var(--text-muted);margin-bottom:22px">Lu et approuvé — Signature de l'employé(e)</div>
+            <div style="font-size:11px;font-weight:600" id="bul-sig-nom"></div>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);text-align:center;font-size:10px;color:var(--text-muted)">
+          Conformément à l'article 144 du Code du travail tunisien — Ce bulletin doit être conservé sans limitation de durée.
+        </div>
+
       </div>
     </div>
   </div>
@@ -165,33 +365,265 @@
 <script src="../js/mock.js"></script>
 <script src="../js/app.js"></script>
 <script>
-  document.getElementById('sidebar-container').innerHTML = buildSidebar('employes');
-  document.getElementById('header-container').innerHTML = buildHeader('Gestion des employés & Paie', { name: 'Admin Système', initials: 'AS' });
-  initTabs();
+document.getElementById('sidebar-container').innerHTML = buildSidebar('employes');
+document.getElementById('header-container').innerHTML = buildHeader('Gestion des employés & Paie', { name: 'Admin Système', initials: 'AS' });
+initTabs();
 
-  document.getElementById('tbl-employes').innerHTML = `
-    <thead><tr><th>Nom & Prénom</th><th>Poste</th><th>Département</th><th>Contrat</th><th>Salaire brut</th><th>Statut</th><th>Actions</th></tr></thead>
-    <tbody>
-      ${MOCK.employes.map(e => `<tr>
-        <td>
-          <div class="flex-center gap-8">
-            <div class="user-avatar" style="background:var(--primary-light);font-size:10px;width:28px;height:28px">${e.nom.split(' ').map(n=>n[0]).join('')}</div>
-            <span class="font-semi">${e.nom}</span>
+// ===== LISTE EMPLOYÉS =====
+document.getElementById('tbl-employes').innerHTML = `
+  <thead><tr><th>Nom & Prénom</th><th>Poste</th><th>Département</th><th>Contrat</th><th>Salaire brut</th><th>Statut</th><th>Actions</th></tr></thead>
+  <tbody>
+    ${MOCK.employes.map(e => `<tr>
+      <td>
+        <div class="flex-center gap-8">
+          <div class="user-avatar" style="background:var(--primary-light);font-size:10px;width:28px;height:28px">${e.nom.split(' ').map(n=>n[0]).join('')}</div>
+          <span class="font-semi">${e.nom}</span>
+        </div>
+      </td>
+      <td>${e.poste}</td>
+      <td><span class="chip" style="font-size:11px">${e.dept}</span></td>
+      <td>${e.contrat}</td>
+      <td class="font-semi">${fmtInt(e.salaire)} TND</td>
+      <td>${badgeStatut(e.statut)}</td>
+      <td>
+        <div class="flex gap-8">
+          <button class="btn btn-xs btn-light"><i class="ri-edit-line"></i></button>
+          <button class="btn btn-xs btn-light"><i class="ri-printer-line"></i></button>
+        </div>
+      </td>
+    </tr>`).join('')}
+  </tbody>`;
+
+// ===== DONNÉES COMPLÉMENTAIRES EMPLOYÉS =====
+const EMP_EXT = {
+   1: { cin:'08123456', cnss:'123 456 789', embauche:'15/01/2021', anciennete:5 },
+   2: { cin:'09234567', cnss:'234 567 890', embauche:'01/03/2021', anciennete:5 },
+   3: { cin:'07345678', cnss:'345 678 901', embauche:'10/06/2022', anciennete:3 },
+   4: { cin:'06456789', cnss:'456 789 012', embauche:'20/09/2022', anciennete:3 },
+   5: { cin:'10567890', cnss:'567 890 123', embauche:'05/02/2023', anciennete:3 },
+   6: { cin:'05678901', cnss:'678 901 234', embauche:'01/09/2019', anciennete:6 },
+   7: { cin:'04789012', cnss:'789 012 345', embauche:'15/04/2020', anciennete:6 },
+   8: { cin:'11890123', cnss:'890 123 456', embauche:'01/01/2025', anciennete:1 },
+   9: { cin:'12901234', cnss:'901 234 567', embauche:'01/07/2025', anciennete:0 },
+  10: { cin:'03012345', cnss:'012 345 678', embauche:'15/11/2023', anciennete:2 },
+};
+
+// ===== CALCUL PAIE =====
+function calcPaie(emp, annee, mois) {
+  const ext  = EMP_EXT[emp.id];
+  const base = emp.salaire;
+
+  // Prime d'ancienneté : 1% par année complète, plafonnée à 20%
+  const pctAnc  = Math.min(ext.anciennete, 20) / 100;
+  const primeAnc = +(base * pctAnc).toFixed(3);
+
+  // Prime transport forfaitaire
+  const transport = 40;
+
+  // Heures supplémentaires déterministes (certains mois/employés)
+  const seed = (emp.id * 7 + mois * 13 + (annee % 10)) % 6;
+  const nbHSup = seed < 2 ? 0 : (seed - 1) * 4;       // 0, 4, 8, 12, 16 heures
+  const txHoraire = +(base / 208).toFixed(3);           // base / 208h mensuel
+  const hSup = +(nbHSup * txHoraire * 1.25).toFixed(3); // majorées 25%
+
+  const totalPrimes = +(primeAnc + transport + hSup).toFixed(3);
+  const brut = +(base + totalPrimes).toFixed(3);
+
+  // CNSS salarié : 9,18% du brut
+  const cnss = +(brut * 0.0918).toFixed(3);
+
+  // IRPP annualisé simplifié (barème progressif tunisien)
+  const abattPro = Math.min(brut * 0.20, 2000 / 12); // abattement charges professionnelles 20%, plafond 2000/an
+  const taxMens  = brut - cnss - abattPro;
+  const taxAn    = taxMens * 12;
+  let irppAn = 0;
+  if (taxAn > 5000)  irppAn += Math.min(taxAn - 5000,  15000) * 0.26;
+  if (taxAn > 20000) irppAn += Math.min(taxAn - 20000, 10000) * 0.28;
+  if (taxAn > 30000) irppAn += (taxAn - 30000) * 0.32;
+  const irpp = +(irppAn / 12).toFixed(3);
+
+  const totalRetenues = +(cnss + irpp).toFixed(3);
+  const net           = +(brut - totalRetenues).toFixed(3);
+
+  // Charges patronales
+  const cnssPatronal = +(brut * 0.1657).toFixed(3);
+  const at           = +(brut * 0.005).toFixed(3);
+  const cout         = +(brut + cnssPatronal + at).toFixed(3);
+
+  return { base, primeAnc, pctAnc, transport, nbHSup, txHoraire, hSup,
+           totalPrimes, brut, cnss, irpp, totalRetenues, net,
+           cnssPatronal, at, cout };
+}
+
+// ===== NAVIGATION MOIS =====
+const MOIS_NOMS  = ['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MOIS_MIN_P = { annee:2026, mois:1 };
+const MOIS_MAX_P = { annee:2026, mois:5 };
+let moisPaie     = { annee:2026, mois:5 };
+
+function renderPaie() {
+  const { annee, mois } = moisPaie;
+
+  document.getElementById('paie-label').textContent = `${MOIS_NOMS[mois]} ${annee}`;
+  document.getElementById('paie-prev').disabled =
+    annee === MOIS_MIN_P.annee && mois === MOIS_MIN_P.mois;
+  document.getElementById('paie-next').disabled =
+    annee === MOIS_MAX_P.annee && mois === MOIS_MAX_P.mois;
+
+  const resultats = MOCK.employes.map(e => ({ emp: e, paie: calcPaie(e, annee, mois) }));
+
+  // KPIs
+  const totBrut = +resultats.reduce((a,r) => a + r.paie.brut, 0).toFixed(3);
+  const totRet  = +resultats.reduce((a,r) => a + r.paie.totalRetenues, 0).toFixed(3);
+  const totNet  = +resultats.reduce((a,r) => a + r.paie.net, 0).toFixed(3);
+  const totCout = +resultats.reduce((a,r) => a + r.paie.cout, 0).toFixed(3);
+  document.getElementById('kpi-brut-total').textContent    = fmt(totBrut) + ' TND';
+  document.getElementById('kpi-retenues-total').textContent = fmt(totRet)  + ' TND';
+  document.getElementById('kpi-net-total').textContent     = fmt(totNet)  + ' TND';
+  document.getElementById('kpi-cout-emp').textContent      = fmt(totCout) + ' TND';
+
+  // Tableau récapitulatif
+  document.getElementById('tbl-paie-body').innerHTML = resultats.map(({ emp, paie }) => {
+    const ini = emp.nom.split(' ').map(n => n[0]).join('').slice(0,2);
+    return `<tr>
+      <td>
+        <div class="flex-center gap-8">
+          <div class="user-avatar" style="background:var(--primary-light);font-size:10px;width:28px;height:28px">${ini}</div>
+          <div>
+            <div class="font-semi">${emp.nom}</div>
+            <div class="text-muted text-xs">${emp.poste} · ${emp.dept}</div>
           </div>
-        </td>
-        <td>${e.poste}</td>
-        <td><span class="chip" style="font-size:11px">${e.dept}</span></td>
-        <td>${e.contrat}</td>
-        <td class="font-semi">${fmtInt(e.salaire)} TND</td>
-        <td>${badgeStatut(e.statut)}</td>
-        <td>
-          <div class="flex gap-8">
-            <button class="btn btn-xs btn-light"><i class="ri-edit-line"></i></button>
-            <button class="btn btn-xs btn-light"><i class="ri-printer-line"></i></button>
-          </div>
-        </td>
-      </tr>`).join('')}
-    </tbody>`;
+        </div>
+      </td>
+      <td style="text-align:right">${fmt(paie.base)}</td>
+      <td style="text-align:right;color:var(--text-muted)">${fmt(paie.totalPrimes)}</td>
+      <td style="text-align:right;font-weight:600">${fmt(paie.brut)}</td>
+      <td style="text-align:right;color:var(--danger)">(${fmt(paie.cnss)})</td>
+      <td style="text-align:right;color:var(--danger)">(${fmt(paie.irpp)})</td>
+      <td style="text-align:right;font-weight:700;color:var(--accent)">${fmt(paie.net)}</td>
+      <td>${badgeStatut(emp.statut)}</td>
+      <td>
+        <div class="flex gap-4">
+          <button class="btn btn-xs btn-outline" onclick="voirBulletin(${emp.id})">
+            <i class="ri-eye-line"></i> Bulletin
+          </button>
+          <button class="btn btn-xs btn-light"><i class="ri-printer-line"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Pied de tableau
+  const totCnss = +resultats.reduce((a,r) => a + r.paie.cnss, 0).toFixed(3);
+  const totIrpp = +resultats.reduce((a,r) => a + r.paie.irpp, 0).toFixed(3);
+  const totBase = +resultats.reduce((a,r) => a + r.paie.base, 0).toFixed(3);
+  const totPrim = +resultats.reduce((a,r) => a + r.paie.totalPrimes, 0).toFixed(3);
+  document.getElementById('tbl-paie-foot').innerHTML = `
+    <tr style="background:#f8fafc;font-weight:700">
+      <td style="padding:10px 14px">TOTAL — ${MOCK.employes.length} employés</td>
+      <td style="padding:10px 14px;text-align:right">${fmt(totBase)}</td>
+      <td style="padding:10px 14px;text-align:right">${fmt(totPrim)}</td>
+      <td style="padding:10px 14px;text-align:right">${fmt(totBrut)}</td>
+      <td style="padding:10px 14px;text-align:right;color:var(--danger)">(${fmt(totCnss)})</td>
+      <td style="padding:10px 14px;text-align:right;color:var(--danger)">(${fmt(totIrpp)})</td>
+      <td style="padding:10px 14px;text-align:right;color:var(--accent);font-size:14px">${fmt(totNet)}</td>
+      <td colspan="2"></td>
+    </tr>`;
+}
+
+window.changeMoisPaie = function(delta) {
+  let { annee, mois } = moisPaie;
+  mois += delta;
+  if (mois > 12) { mois = 1; annee++; }
+  if (mois < 1)  { mois = 12; annee--; }
+  const apresMin = annee > MOIS_MIN_P.annee || (annee === MOIS_MIN_P.annee && mois >= MOIS_MIN_P.mois);
+  const avantMax = annee < MOIS_MAX_P.annee || (annee === MOIS_MAX_P.annee && mois <= MOIS_MAX_P.mois);
+  if (!apresMin || !avantMax) return;
+  moisPaie = { annee, mois };
+  renderPaie();
+};
+
+// Initialiser la paie au premier clic sur l'onglet
+document.querySelectorAll('.tab[data-target="tab-paie"]').forEach(tab => {
+  tab.addEventListener('click', renderPaie);
+});
+
+// ===== BULLETIN DE PAIE (MODAL) =====
+function netEnLettres(net) {
+  const entier = Math.floor(net);
+  const dec    = Math.round((net - entier) * 1000);
+  return `${entier.toLocaleString('fr-TN')} dinars` + (dec > 0 ? ` et ${dec} millimes` : '');
+}
+
+window.voirBulletin = function(empId) {
+  const emp  = MOCK.employes.find(e => e.id === empId);
+  const ext  = EMP_EXT[empId];
+  const { annee, mois } = moisPaie;
+  const p    = calcPaie(emp, annee, mois);
+
+  // En-tête
+  document.getElementById('bul-periode').textContent  = `${MOIS_NOMS[mois]} ${annee}`;
+
+  // Infos employé
+  document.getElementById('bul-nom').textContent      = emp.nom;
+  document.getElementById('bul-poste').textContent    = emp.poste;
+  document.getElementById('bul-dept').textContent     = emp.dept;
+  document.getElementById('bul-contrat').textContent  = emp.contrat;
+  document.getElementById('bul-cin').textContent      = ext.cin;
+  document.getElementById('bul-cnss-num').textContent = ext.cnss;
+  document.getElementById('bul-embauche').textContent = ext.embauche;
+  document.getElementById('bul-anc').textContent      = ext.anciennete + (ext.anciennete <= 1 ? ' an' : ' ans');
+  document.getElementById('bul-sig-nom').textContent  = emp.nom;
+
+  // Gains — Salaire de base
+  document.getElementById('bul-base-col').textContent = fmt(p.base);
+  document.getElementById('bul-base-mnt').textContent = fmt(p.base);
+
+  // Prime ancienneté
+  const ancRow = document.getElementById('bul-anc-row');
+  if (p.primeAnc > 0) {
+    ancRow.style.display = '';
+    document.getElementById('bul-anc-base').textContent = fmt(p.base);
+    document.getElementById('bul-anc-pct').textContent  = (ext.anciennete) + ',00%';
+    document.getElementById('bul-anc-mnt').textContent  = fmt(p.primeAnc);
+  } else {
+    ancRow.style.display = 'none';
+  }
+
+  // Transport
+  document.getElementById('bul-transport').textContent = fmt(p.transport);
+
+  // Heures supplémentaires
+  const hSupRow = document.getElementById('bul-hsup-row');
+  if (p.nbHSup > 0) {
+    hSupRow.style.display = '';
+    document.getElementById('bul-hsup-base').textContent = fmt(p.txHoraire) + '/h';
+    document.getElementById('bul-hsup-nb').textContent   = p.nbHSup + ' h × 125%';
+    document.getElementById('bul-hsup').textContent      = fmt(p.hSup);
+  } else {
+    hSupRow.style.display = 'none';
+  }
+
+  // Total brut
+  document.getElementById('bul-brut').textContent = fmt(p.brut);
+
+  // Retenues
+  document.getElementById('bul-cnss-base').textContent    = fmt(p.brut);
+  document.getElementById('bul-cnss-mnt').textContent     = fmt(p.cnss);
+  document.getElementById('bul-irpp-mnt').textContent     = fmt(p.irpp);
+  document.getElementById('bul-retenues-total').textContent = fmt(p.totalRetenues);
+
+  // Net
+  document.getElementById('bul-net').textContent        = fmt(p.net);
+  document.getElementById('bul-net-lettres').textContent = netEnLettres(p.net);
+
+  // Charges patronales
+  document.getElementById('bul-cnss-pat').textContent = fmt(p.cnssPatronal);
+  document.getElementById('bul-at').textContent       = fmt(p.at);
+  document.getElementById('bul-cout').textContent     = fmt(p.cout);
+
+  openModal('modal-bulletin');
+};
 </script>
 </body>
 </html>

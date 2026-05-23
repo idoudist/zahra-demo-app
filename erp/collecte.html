@@ -30,6 +30,21 @@
     .seance-chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .seance-matin  { background: #fef9c3; color: #a16207; }
     .seance-soir   { background: #ede9fe; color: #6d28d9; }
+    /* Citernes */
+    .citernes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+    .citerne-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); }
+    .citerne-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .citerne-id { font-family: 'Courier New'; font-size: 11px; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 4px; color: var(--primary); }
+    .citerne-level-bar { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin: 10px 0 6px; }
+    .citerne-fill { height: 100%; border-radius: 5px; transition: width 0.6s ease; }
+    .citerne-tank { width: 48px; height: 72px; border: 2px solid var(--border); border-radius: 4px 4px 6px 6px; position: relative; overflow: hidden; flex-shrink: 0; }
+    .citerne-tank-fill { position: absolute; bottom: 0; left: 0; right: 0; transition: height 0.6s ease; }
+    .citerne-pct { font-size: 22px; font-weight: 800; line-height: 1; }
+    /* Pertes badges */
+    .perte-ok   { color: var(--accent);  font-weight: 600; }
+    .perte-warn { color: var(--warning); font-weight: 700; }
+    .perte-high { color: var(--danger);  font-weight: 700; }
+    @media (max-width: 900px) { .citernes-grid { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
 <body>
@@ -75,7 +90,9 @@
             <div class="tab" data-group="main" data-target="tab-liste"><i class="ri-list-check"></i>Liste des séances</div>
             <div class="tab" data-group="main" data-target="tab-collecteurs"><i class="ri-team-line"></i>Secteurs & Collecteurs</div>
             <div class="tab" data-group="main" data-target="tab-rapports"><i class="ri-bar-chart-2-line"></i>Rapports par secteur</div>
+            <div class="tab" data-group="main" data-target="tab-citernes"><i class="ri-filter-3-line"></i>Citernes & Pertes</div>
             <div class="tab" data-group="main" data-target="tab-reglements"><i class="ri-bank-card-line"></i>Règlements</div>
+            <div class="tab" data-group="main" data-target="tab-baremes"><i class="ri-price-tag-3-line"></i>Barèmes de prix</div>
           </div>
         </div>
 
@@ -256,8 +273,362 @@
             </table>
           </div>
         </div>
+        <!-- ===== CITERNES & PERTES ===== -->
+        <div id="tab-citernes" class="tab-content" data-group="main">
+          <div class="card-body">
+
+            <!-- Barre de statut du jour -->
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+              <div style="display:flex;gap:20px;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <div style="font-size:22px;font-weight:800;color:var(--primary)">11 527 L</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Collecté aujourd'hui</div>
+                </div>
+                <div style="display:flex;align-items:center;font-size:20px;color:var(--border)">→</div>
+                <div style="text-align:center">
+                  <div style="font-size:22px;font-weight:800;color:var(--warning)">8 000 L</div>
+                  <div style="font-size:11px;color:var(--text-muted)">En citerne (2 actives)</div>
+                </div>
+                <div style="display:flex;align-items:center;font-size:20px;color:var(--border)">→</div>
+                <div style="text-align:center">
+                  <div style="font-size:22px;font-weight:800;color:var(--text-muted)">—</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Livraison en attente</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="openModal('modal-livraison-usine')">
+                <i class="ri-truck-line"></i>Livraison centrale laitière
+              </button>
+            </div>
+
+            <!-- Citernes -->
+            <h4 style="font-size:13px;font-weight:600;margin-bottom:12px"><i class="ri-filter-3-line text-primary"></i> &nbsp;État des citernes — 22/05/2026 18:30</h4>
+            <div class="citernes-grid" id="citernes-grid"></div>
+
+            <!-- KPIs pertes du mois -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+              <div style="text-align:center">
+                <div style="font-size:18px;font-weight:700;color:var(--primary)" id="kpi-collecte-mois">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px">Total collecté — Mai</div>
+              </div>
+              <div style="text-align:center;border-left:1px solid var(--border)">
+                <div style="font-size:18px;font-weight:700;color:var(--accent)" id="kpi-livre-mois">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px">Livré centrale — Mai</div>
+              </div>
+              <div style="text-align:center;border-left:1px solid var(--border)">
+                <div style="font-size:18px;font-weight:700;color:var(--danger)" id="kpi-pertes-mois">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px">Pertes totales — Mai</div>
+              </div>
+              <div style="text-align:center;border-left:1px solid var(--border)">
+                <div style="font-size:18px;font-weight:700" id="kpi-pct-mois" style="color:var(--accent)">—</div>
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px">% perte moyen</div>
+              </div>
+            </div>
+
+            <!-- Tableau historique livraisons + pertes -->
+            <div class="rapport-table-wrap">
+              <div class="rapport-table-header">
+                <h4><i class="ri-bar-chart-grouped-line"></i> &nbsp;Historique livraisons & pertes — Mai 2026</h4>
+                <div style="display:flex;gap:8px">
+                  <span style="font-size:11.5px;color:var(--text-muted);padding:4px 8px;background:#fef9c3;border-radius:4px">
+                    <i class="ri-alert-line" style="color:var(--warning)"></i> Seuil alerte : 2%
+                  </span>
+                  <button class="btn btn-xs btn-light"><i class="ri-download-line"></i>Export</button>
+                </div>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead><tr>
+                    <th>Date</th>
+                    <th style="text-align:right">Collecté (L)</th>
+                    <th style="text-align:right">Livré centrale (L)</th>
+                    <th style="text-align:right">Pertes (L)</th>
+                    <th style="text-align:right">% pertes</th>
+                    <th>Cause estimée</th>
+                    <th>Chauffeur</th>
+                    <th>Statut</th>
+                    <th></th>
+                  </tr></thead>
+                  <tbody id="tbl-livraisons-usine"></tbody>
+                  <tfoot id="tfoot-livraisons-usine"></tfoot>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ===== BARÈMES DE PRIX ===== -->
+        <div id="tab-baremes" class="tab-content" data-group="main">
+          <div class="card-body">
+
+            <!-- Barre d'action -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+              <div class="alert alert-info" style="margin:0;flex:1">
+                <i class="ri-information-line"></i>
+                Barème actif <strong>B-005</strong> — achat : <strong>1,350 TND/L</strong> · vente : <strong>1,600 TND/L</strong> · marge : <strong>0,250 TND/L</strong> — en vigueur depuis le 01/03/2026.
+              </div>
+              <button class="btn btn-primary" onclick="openModal('modal-nouveau-bareme')">
+                <i class="ri-add-line"></i>Nouveau barème
+              </button>
+            </div>
+
+            <!-- Barème actif + chart côte à côte -->
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:20px">
+
+              <!-- Barème actif -->
+              <div style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);border-radius:var(--radius);padding:18px;color:white">
+                <div style="font-size:11px;opacity:0.75;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">
+                  <i class="ri-checkbox-circle-line"></i> Barème actif — B-005
+                </div>
+
+                <!-- Prix d'achat -->
+                <div style="padding:10px;background:rgba(255,255,255,0.1);border-radius:6px;margin-bottom:8px">
+                  <div style="font-size:9.5px;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Prix d'achat &nbsp;·&nbsp; agriculteur → SMBSA</div>
+                  <div style="display:flex;align-items:baseline;gap:6px">
+                    <span style="font-size:26px;font-weight:800;letter-spacing:-0.5px">1,350</span>
+                    <span style="font-size:12px;opacity:0.85">TND/L</span>
+                    <span style="margin-left:auto;font-weight:700;color:#86efac;font-size:12px">▲ +1,89%</span>
+                  </div>
+                </div>
+
+                <!-- Prix de vente -->
+                <div style="padding:10px;background:rgba(255,255,255,0.1);border-radius:6px;margin-bottom:8px">
+                  <div style="font-size:9.5px;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Prix de vente &nbsp;·&nbsp; SMBSA → centrale</div>
+                  <div style="display:flex;align-items:baseline;gap:6px">
+                    <span style="font-size:26px;font-weight:800;letter-spacing:-0.5px">1,600</span>
+                    <span style="font-size:12px;opacity:0.85">TND/L</span>
+                    <span style="margin-left:auto;font-weight:700;color:#86efac;font-size:12px">▲ +1,91%</span>
+                  </div>
+                </div>
+
+                <!-- Marge -->
+                <div style="padding:8px 10px;background:rgba(255,255,255,0.08);border-radius:6px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                  <span style="font-size:11px;opacity:0.7">Marge brute / litre</span>
+                  <span style="font-size:16px;font-weight:800;color:#fde68a">0,250 TND &nbsp;<span style="font-size:12px;opacity:0.8">(18,5%)</span></span>
+                </div>
+
+                <!-- Méta -->
+                <div style="padding-top:10px;border-top:1px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px">
+                    <span style="opacity:0.7">En vigueur depuis</span><span style="font-weight:600">01/03/2026</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px">
+                    <span style="opacity:0.7">Validé par</span><span>Admin Système</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Évolution prix (chart) -->
+              <div class="chart-card" style="margin:0">
+                <div class="chart-card-title"><i class="ri-line-chart-line text-primary"></i> Évolution prix achat & vente du lait (TND/L)</div>
+                <canvas id="chart-prix" height="120"></canvas>
+              </div>
+            </div>
+
+            <!-- Tableau historique -->
+            <div class="rapport-table-wrap">
+              <div class="rapport-table-header">
+                <h4><i class="ri-history-line"></i> &nbsp;Historique des barèmes</h4>
+                <button class="btn btn-xs btn-light"><i class="ri-download-line"></i>Exporter</button>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead><tr>
+                    <th>Référence</th><th>Date début</th><th>Date fin</th>
+                    <th style="text-align:right">Achat/L (TND)</th>
+                    <th style="text-align:right">Var. achat</th>
+                    <th style="text-align:right">Vente/L (TND)</th>
+                    <th style="text-align:right">Var. vente</th>
+                    <th style="text-align:right">Marge/L</th>
+                    <th>Validé par</th><th>Statut</th><th></th>
+                  </tr></thead>
+                  <tbody id="tbl-baremes"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
 
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal livraison centrale laitière -->
+<div class="modal-overlay" id="modal-livraison-usine">
+  <div class="modal" style="width:540px">
+    <div class="modal-header">
+      <h3><i class="ri-truck-line text-primary"></i> &nbsp;Livraison — Centrale laitière</h3>
+      <button class="modal-close" onclick="closeModal('modal-livraison-usine')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Date de livraison <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="lv-date" type="date" value="2026-05-22">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Centrale laitière</label>
+          <select class="form-control"><option>Centrale Laitière de Mahdia</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Citernes à vider <span style="color:var(--danger)">*</span></label>
+        <div style="display:flex;gap:16px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#f8fafc">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+            <input type="checkbox" class="citerne-check" value="CIT-A" onchange="updateVolumeCiternes()" checked>
+            <strong>CIT-A</strong> — 3 200 L
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+            <input type="checkbox" class="citerne-check" value="CIT-B" onchange="updateVolumeCiternes()" checked>
+            <strong>CIT-B</strong> — 4 800 L
+          </label>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Volume collecté (L)</label>
+          <input class="form-control" id="lv-volume-collecte" type="number" value="8000" readonly style="background:#f8fafc;font-weight:700;color:var(--primary)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Volume reçu centrale (L) <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="lv-volume-recu" type="number" placeholder="Ex : 7 850" oninput="calcPerteLivraison()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pertes calculées</label>
+          <div id="lv-perte-calc" style="padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-weight:700;background:#f8fafc;color:var(--text-muted)">—</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">% pertes</label>
+          <div id="lv-pct-calc" style="padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-weight:700;font-size:16px;background:#f8fafc;color:var(--text-muted)">—</div>
+        </div>
+      </div>
+      <div id="lv-alert" class="alert alert-warning mb-16" style="display:none">
+        <i class="ri-alert-line"></i>
+        <div>Pertes <strong>supérieures au seuil de 2%</strong>. Veuillez préciser la cause estimée et notifier le responsable.</div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Cause estimée des pertes</label>
+          <select class="form-control" id="lv-cause">
+            <option>Refroidissement (contraction volume)</option>
+            <option>Mauvaise estimation collecte</option>
+            <option>Perte citerne / robinet</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chauffeur <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="lv-chauffeur" placeholder="Nom du chauffeur" value="Ben Salah Youssef">
+        </div>
+        <div class="form-group">
+          <label class="form-label">N° Bon de livraison <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="lv-bl" placeholder="BL-2026-xxxx" value="BL-2026-0523">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Heure de départ</label>
+          <input class="form-control" type="time" value="17:30">
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Observations</label>
+          <input class="form-control" placeholder="Précisions optionnelles...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-livraison-usine')">Annuler</button>
+      <button class="btn btn-primary" onclick="validerLivraisonUsine()">
+        <i class="ri-truck-line"></i> Enregistrer la livraison
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nouveau barème -->
+<div class="modal-overlay" id="modal-nouveau-bareme">
+  <div class="modal" style="width:540px">
+    <div class="modal-header">
+      <h3><i class="ri-price-tag-3-line text-primary"></i> &nbsp;Nouveau barème de prix</h3>
+      <button class="modal-close" onclick="closeModal('modal-nouveau-bareme')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-warning mb-16">
+        <i class="ri-alert-line"></i>
+        <div>Le nouveau barème sera appliqué à <strong>toutes les séances futures</strong>. Le barème actuel sera clôturé automatiquement la veille de la date d'entrée en vigueur. Cette action est <strong>irréversible</strong>.</div>
+      </div>
+
+      <!-- Prix d'achat -->
+      <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--primary)">
+        <i class="ri-arrow-down-circle-line"></i> Prix d'achat — agriculteur → SMBSA
+      </div>
+      <div class="form-grid-2 mb-16">
+        <div class="form-group">
+          <label class="form-label">Prix actuel (TND/L)</label>
+          <input class="form-control" value="1,350" readonly style="background:#f8fafc;font-weight:700;color:var(--primary)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nouveau prix d'achat (TND/L) <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="bareme-new-prix" type="number" step="0.001" min="0" placeholder="Ex : 1,375" oninput="calcBaremeVariation()">
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Variation achat calculée</label>
+          <div id="bareme-variation-display" style="padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-weight:700;font-size:13px;background:#f8fafc;color:var(--text-muted)">—</div>
+        </div>
+      </div>
+
+      <!-- Prix de vente -->
+      <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--accent)">
+        <i class="ri-arrow-up-circle-line"></i> Prix de vente — SMBSA → centrale laitière
+      </div>
+      <div class="form-grid-2 mb-16">
+        <div class="form-group">
+          <label class="form-label">Prix vente actuel (TND/L)</label>
+          <input class="form-control" value="1,600" readonly style="background:#f8fafc;font-weight:700;color:var(--accent)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nouveau prix de vente (TND/L) <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="bareme-new-vente" type="number" step="0.001" min="0" placeholder="Ex : 1,625" oninput="calcBaremeVariation()">
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Variation vente + marge calculée</label>
+          <div id="bareme-variation-vente-display" style="padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-weight:700;font-size:13px;background:#f8fafc;color:var(--text-muted)">—</div>
+        </div>
+      </div>
+
+      <!-- Méta -->
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Date d'entrée en vigueur <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="bareme-date" type="date" value="2026-06-01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prochain réexamen prévu</label>
+          <input class="form-control" type="date" placeholder="Optionnel">
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Motif de la modification <span style="color:var(--danger)">*</span></label>
+          <select class="form-control" id="bareme-motif">
+            <option value="">— Sélectionner un motif —</option>
+            <option>Révision semestrielle standard</option>
+            <option>Ajustement marché (hausse coûts alimentation)</option>
+            <option>Décision direction SMBSA Ezahra</option>
+            <option>Accord interprofessionnel laitier</option>
+            <option>Révision annuelle contractuelle</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Observations</label>
+          <input class="form-control" placeholder="Précisions optionnelles...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-nouveau-bareme')">Annuler</button>
+      <button class="btn btn-primary" onclick="validerNouveauBareme()">
+        <i class="ri-save-line"></i> Enregistrer le barème
+      </button>
     </div>
   </div>
 </div>
@@ -622,10 +993,333 @@ function buildCharts() {
 
 // Initialiser charts quand l'onglet Rapports est cliqué
 document.querySelectorAll('.tab[data-target="tab-rapports"]').forEach(tab => {
-  tab.addEventListener('click', () => {
-    setTimeout(buildCharts, 50);
-  });
+  tab.addEventListener('click', () => setTimeout(buildCharts, 50));
 });
+
+// ===== BARÈMES DE PRIX =====
+const BAREMES = [
+  { num:'B-005', debut:'01/03/2026', fin:null,         prix:1.350, prixVente:1.600, variation:+1.89, variationVente:+1.91, valideur:'Admin Système', statut:'actif'   },
+  { num:'B-004', debut:'01/11/2025', fin:'28/02/2026', prix:1.325, prixVente:1.570, variation:+1.53, variationVente:+1.62, valideur:'Admin Système', statut:'expiré'  },
+  { num:'B-003', debut:'01/06/2025', fin:'31/10/2025', prix:1.305, prixVente:1.545, variation:+2.36, variationVente:+2.32, valideur:'Admin Système', statut:'expiré'  },
+  { num:'B-002', debut:'01/01/2025', fin:'31/05/2025', prix:1.275, prixVente:1.510, variation:+2.00, variationVente:+2.03, valideur:'Admin Système', statut:'expiré'  },
+  { num:'B-001', debut:'01/07/2024', fin:'31/12/2024', prix:1.250, prixVente:1.480, variation:null,  variationVente:null,  valideur:'Migration',     statut:'expiré'  },
+];
+
+function buildBaremesTab() {
+  // Tableau historique
+  document.getElementById('tbl-baremes').innerHTML = BAREMES.map(b => {
+    const varAchatHtml = b.variation === null
+      ? '<span class="text-muted">—</span>'
+      : `<span style="font-weight:700;color:${b.variation>=0?'var(--accent)':'var(--danger)'}">
+           ${b.variation>=0?'▲':'▼'} ${b.variation>=0?'+':''}${b.variation.toFixed(2)}%
+         </span>`;
+    const varVenteHtml = b.variationVente === null
+      ? '<span class="text-muted">—</span>'
+      : `<span style="font-weight:700;color:${b.variationVente>=0?'var(--accent)':'var(--danger)'}">
+           ${b.variationVente>=0?'▲':'▼'} ${b.variationVente>=0?'+':''}${b.variationVente.toFixed(2)}%
+         </span>`;
+    const marge = (b.prixVente - b.prix).toFixed(3);
+    const margeColor = parseFloat(marge) >= 0.24 ? 'var(--accent)' : 'var(--warning)';
+    const statutHtml = b.statut === 'actif'
+      ? '<span class="badge badge-success">actif</span>'
+      : '<span class="badge badge-secondary">expiré</span>';
+    return `<tr>
+      <td><span style="font-family:'Courier New';font-size:11.5px;background:#f1f5f9;border:1px solid #cbd5e1;padding:2px 7px;border-radius:4px;color:var(--primary)">${b.num}</span></td>
+      <td>${b.debut}</td>
+      <td>${b.fin || '<span class="badge badge-success">En cours</span>'}</td>
+      <td style="text-align:right;font-weight:700;font-size:13px;color:var(--primary)">${b.prix.toFixed(3)}</td>
+      <td style="text-align:right">${varAchatHtml}</td>
+      <td style="text-align:right;font-weight:700;font-size:13px;color:var(--accent)">${b.prixVente.toFixed(3)}</td>
+      <td style="text-align:right">${varVenteHtml}</td>
+      <td style="text-align:right;font-weight:700;font-size:13px;color:${margeColor}">${marge}</td>
+      <td class="text-muted text-sm">${b.valideur}</td>
+      <td>${statutHtml}</td>
+      <td><button class="btn btn-xs btn-light"><i class="ri-eye-line"></i></button></td>
+    </tr>`;
+  }).join('');
+
+  // Chart évolution prix
+  if (document.getElementById('chart-prix')._chartInstance) {
+    document.getElementById('chart-prix')._chartInstance.destroy();
+  }
+  const bAsc = BAREMES.slice().reverse();
+  const chartPrix = new Chart(document.getElementById('chart-prix'), {
+    type: 'line',
+    data: {
+      labels: bAsc.map(b => b.debut),
+      datasets: [
+        {
+          label: 'Prix d\'achat (TND/L)',
+          data: bAsc.map(b => b.prix),
+          borderColor: '#1a7fa3',
+          backgroundColor: 'rgba(26,127,163,0.07)',
+          borderWidth: 2.5,
+          pointBackgroundColor: bAsc.map(b => b.statut === 'actif' ? '#27ae60' : '#1a7fa3'),
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          tension: 0.3,
+          fill: false,
+        },
+        {
+          label: 'Prix de vente (TND/L)',
+          data: bAsc.map(b => b.prixVente),
+          borderColor: '#27ae60',
+          backgroundColor: 'rgba(39,174,96,0.07)',
+          borderWidth: 2.5,
+          pointBackgroundColor: bAsc.map(b => b.statut === 'actif' ? '#f39c12' : '#27ae60'),
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          tension: 0.3,
+          fill: false,
+        },
+        {
+          label: 'Marge (TND/L)',
+          data: bAsc.map(b => +(b.prixVente - b.prix).toFixed(3)),
+          borderColor: '#f39c12',
+          backgroundColor: 'rgba(243,156,18,0.08)',
+          borderWidth: 1.5,
+          borderDash: [5, 3],
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          fill: false,
+          yAxisID: 'yMarge',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 14 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const suffix = ctx.datasetIndex === 2 ? ' TND/L (marge)' : ' TND/L';
+              return ` ${ctx.dataset.label}: ${ctx.raw.toFixed(3)}${suffix}`;
+            },
+            afterBody: ctx => {
+              const b = bAsc[ctx[0].dataIndex];
+              return b.statut === 'actif' ? ['  ✓ Barème actif'] : [`  Fin : ${b.fin}`];
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          min: 1.20, max: 1.65,
+          position: 'left',
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { callback: v => v.toFixed(3), font: { size: 11 } },
+          title: { display: true, text: 'Achat / Vente (TND/L)', font: { size: 10 }, color: '#94a3b8' }
+        },
+        yMarge: {
+          min: 0.20, max: 0.30,
+          position: 'right',
+          grid: { display: false },
+          ticks: { callback: v => v.toFixed(3), font: { size: 10 }, color: '#f39c12' },
+          title: { display: true, text: 'Marge (TND/L)', font: { size: 10 }, color: '#f39c12' }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 10.5 } } }
+      }
+    }
+  });
+  document.getElementById('chart-prix')._chartInstance = chartPrix;
+}
+
+document.querySelectorAll('.tab[data-target="tab-baremes"]').forEach(tab => {
+  tab.addEventListener('click', () => setTimeout(buildBaremesTab, 50));
+});
+
+// ===== MODAL NOUVEAU BARÈME =====
+window.calcBaremeVariation = function() {
+  const newAchat = parseFloat(document.getElementById('bareme-new-prix').value);
+  const newVente = parseFloat(document.getElementById('bareme-new-vente').value);
+  const elAchat  = document.getElementById('bareme-variation-display');
+  const elVente  = document.getElementById('bareme-variation-vente-display');
+
+  if (isNaN(newAchat) || newAchat <= 0) {
+    elAchat.textContent = '—'; elAchat.style.color = 'var(--text-muted)';
+  } else {
+    const v = ((newAchat - 1.350) / 1.350) * 100;
+    elAchat.textContent = `${v >= 0 ? '+' : ''}${v.toFixed(2)}% — de 1,350 vers ${newAchat.toFixed(3)} TND/L`;
+    elAchat.style.color = v >= 0 ? 'var(--accent)' : 'var(--danger)';
+  }
+
+  if (isNaN(newVente) || newVente <= 0) {
+    elVente.textContent = '—'; elVente.style.color = 'var(--text-muted)';
+  } else {
+    const v = ((newVente - 1.600) / 1.600) * 100;
+    const achat = isNaN(newAchat) || newAchat <= 0 ? 1.350 : newAchat;
+    const marge = newVente - achat;
+    elVente.textContent = `${v >= 0 ? '+' : ''}${v.toFixed(2)}% — de 1,600 vers ${newVente.toFixed(3)} TND/L · Marge : ${marge.toFixed(3)} TND/L`;
+    elVente.style.color = v >= 0 ? 'var(--accent)' : 'var(--danger)';
+  }
+};
+
+window.validerNouveauBareme = function() {
+  const prix  = document.getElementById('bareme-new-prix').value;
+  const vente = document.getElementById('bareme-new-vente').value;
+  const motif = document.getElementById('bareme-motif').value;
+  const date  = document.getElementById('bareme-date').value;
+  if (!prix  || parseFloat(prix)  <= 0) { alert('Veuillez saisir le nouveau prix d\'achat.'); return; }
+  if (!vente || parseFloat(vente) <= 0) { alert('Veuillez saisir le nouveau prix de vente.'); return; }
+  if (parseFloat(vente) <= parseFloat(prix)) { alert('Le prix de vente doit être supérieur au prix d\'achat.'); return; }
+  if (!motif) { alert('Veuillez sélectionner un motif.'); return; }
+  if (!date)  { alert('Veuillez choisir une date d\'entrée en vigueur.'); return; }
+  closeModal('modal-nouveau-bareme');
+  const marge = (parseFloat(vente) - parseFloat(prix)).toFixed(3);
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
+  toast.innerHTML = `<i class="ri-check-line"></i> Barème achat ${parseFloat(prix).toFixed(3)} / vente ${parseFloat(vente).toFixed(3)} TND/L (marge ${marge}) — en vigueur le ${date}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+};
+
+// ===== CITERNES & PERTES =====
+const CITERNES = [
+  { id:'CIT-A', nom:'Citerne A', capacite:5000, volume:3200, statut:'actif',     couleur:'#1a7fa3' },
+  { id:'CIT-B', nom:'Citerne B', capacite:8000, volume:4800, statut:'actif',     couleur:'#27ae60' },
+  { id:'CIT-C', nom:'Citerne C', capacite:5000, volume:0,    statut:'nettoyage', couleur:'#94a3b8' },
+];
+
+const LIVRAISONS_USINE = [
+  { date:'22/05/2026', collecte:11527, livre:11321, chauffeur:'Ben Salah Youssef', bl:'BL-2026-0522', cause:'Refroidissement',          statut:'livré' },
+  { date:'21/05/2026', collecte:11250, livre:11102, chauffeur:'Ben Salah Youssef', bl:'BL-2026-0521', cause:'Refroidissement',          statut:'livré' },
+  { date:'20/05/2026', collecte:11100, livre:10823, chauffeur:'Jbeli Nour',        bl:'BL-2026-0520', cause:'Mauvaise estimation',      statut:'livré' },
+  { date:'19/05/2026', collecte:10880, livre:10750, chauffeur:'Ben Salah Youssef', bl:'BL-2026-0519', cause:'Refroidissement',          statut:'livré' },
+  { date:'18/05/2026', collecte:10510, livre:10430, chauffeur:'Jbeli Nour',        bl:'BL-2026-0518', cause:'Perte citerne / robinet', statut:'livré' },
+  { date:'17/05/2026', collecte:10240, livre:10198, chauffeur:'Ben Salah Youssef', bl:'BL-2026-0517', cause:'Refroidissement',          statut:'livré' },
+  { date:'16/05/2026', collecte: 9820, livre: 9750, chauffeur:'Jbeli Nour',        bl:'BL-2026-0516', cause:'Mauvaise estimation',      statut:'livré' },
+];
+
+function buildCiternesTab() {
+  // Citerne cards
+  document.getElementById('citernes-grid').innerHTML = CITERNES.map(c => {
+    const pct = c.volume > 0 ? Math.round(c.volume / c.capacite * 100) : 0;
+    const fillColor = c.statut === 'nettoyage' ? '#94a3b8'
+      : pct >= 80 ? '#e74c3c'
+      : pct >= 50 ? '#f39c12'
+      : '#1a7fa3';
+    const statutBadge = c.statut === 'actif'
+      ? '<span class="badge badge-success">actif</span>'
+      : '<span class="badge badge-secondary">nettoyage</span>';
+    return `<div class="citerne-card">
+      <div class="citerne-header">
+        <div>
+          <span class="citerne-id">${c.id}</span>
+          <div style="font-size:13px;font-weight:600;margin-top:5px;color:var(--text)">${c.nom}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Capacité : ${fmtInt(c.capacite)} L</div>
+        </div>
+        ${statutBadge}
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px">
+          <span>0 L</span>
+          <span style="font-weight:700;font-size:13px;color:${fillColor}">${c.statut==='nettoyage' ? '—' : fmtInt(c.volume)+' L'}</span>
+          <span>${fmtInt(c.capacite)} L</span>
+        </div>
+        <div class="citerne-level-bar">
+          <div class="citerne-fill" style="width:${c.statut==='nettoyage'?0:pct}%;background:${fillColor}"></div>
+        </div>
+        <div style="text-align:right;margin-top:4px">
+          <span class="citerne-pct" style="color:${fillColor}">${c.statut==='nettoyage'?'—':pct+'%'}</span>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:4px">remplissage</span>
+        </div>
+      </div>
+      ${c.statut === 'nettoyage' ? '<div style="margin-top:10px;font-size:11px;color:var(--text-muted);text-align:center;background:#f8fafc;padding:5px;border-radius:4px"><i class="ri-tools-line"></i> En cours de nettoyage</div>' : ''}
+    </div>`;
+  }).join('');
+
+  // KPIs mensuels
+  const totalCollecte = LIVRAISONS_USINE.reduce((a,l) => a + l.collecte, 0);
+  const totalLivre    = LIVRAISONS_USINE.reduce((a,l) => a + l.livre,    0);
+  const totalPertes   = totalCollecte - totalLivre;
+  const pctMoyen      = (totalPertes / totalCollecte * 100).toFixed(2);
+  const pctColor = parseFloat(pctMoyen) > 3 ? 'var(--danger)'
+    : parseFloat(pctMoyen) > 2 ? 'var(--warning)'
+    : 'var(--accent)';
+
+  document.getElementById('kpi-collecte-mois').innerHTML = fmtInt(totalCollecte) + ' <span style="font-size:12px;font-weight:400">L</span>';
+  document.getElementById('kpi-livre-mois').innerHTML    = fmtInt(totalLivre)    + ' <span style="font-size:12px;font-weight:400">L</span>';
+  document.getElementById('kpi-pertes-mois').innerHTML   = fmtInt(totalPertes)   + ' <span style="font-size:12px;font-weight:400">L</span>';
+  document.getElementById('kpi-pct-mois').style.color    = pctColor;
+  document.getElementById('kpi-pct-mois').textContent    = pctMoyen + '%';
+
+  // Tableau historique
+  document.getElementById('tbl-livraisons-usine').innerHTML = LIVRAISONS_USINE.map(l => {
+    const perte    = l.collecte - l.livre;
+    const pct      = (perte / l.collecte * 100).toFixed(2);
+    const pctClass = parseFloat(pct) > 3 ? 'perte-high' : parseFloat(pct) > 2 ? 'perte-warn' : 'perte-ok';
+    const alertIco = parseFloat(pct) > 2 ? ' <i class="ri-alert-line" style="color:var(--warning)"></i>' : '';
+    return `<tr>
+      <td>${l.date}</td>
+      <td style="text-align:right;font-weight:600">${fmtInt(l.collecte)} L</td>
+      <td style="text-align:right;font-weight:600;color:var(--accent)">${fmtInt(l.livre)} L</td>
+      <td style="text-align:right" class="${pctClass}">${fmtInt(perte)} L</td>
+      <td style="text-align:right" class="${pctClass}">${pct}%${alertIco}</td>
+      <td class="text-muted text-sm">${l.cause}</td>
+      <td class="text-muted text-sm">${l.chauffeur}</td>
+      <td><span class="badge badge-success">livré</span></td>
+      <td><button class="btn btn-xs btn-light"><i class="ri-eye-line"></i></button></td>
+    </tr>`;
+  }).join('');
+
+  // Pied de tableau
+  const avgPct      = (totalPertes / totalCollecte * 100).toFixed(2);
+  const avgPctClass = parseFloat(avgPct) > 3 ? 'perte-high' : parseFloat(avgPct) > 2 ? 'perte-warn' : 'perte-ok';
+  document.getElementById('tfoot-livraisons-usine').innerHTML = `
+    <tr style="background:#f8fafc;font-weight:700">
+      <td style="padding:10px 14px">TOTAL (${LIVRAISONS_USINE.length} livraisons)</td>
+      <td style="padding:10px 14px;text-align:right">${fmtInt(totalCollecte)} L</td>
+      <td style="padding:10px 14px;text-align:right;color:var(--accent)">${fmtInt(totalLivre)} L</td>
+      <td style="padding:10px 14px;text-align:right" class="${avgPctClass}">${fmtInt(totalPertes)} L</td>
+      <td style="padding:10px 14px;text-align:right" class="${avgPctClass}">${avgPct}%</td>
+      <td colspan="4"></td>
+    </tr>`;
+}
+
+document.querySelectorAll('.tab[data-target="tab-citernes"]').forEach(tab => {
+  tab.addEventListener('click', () => setTimeout(buildCiternesTab, 50));
+});
+
+// Modal livraison usine — fonctions
+window.updateVolumeCiternes = function() {
+  const volumes = { 'CIT-A': 3200, 'CIT-B': 4800 };
+  let total = 0;
+  document.querySelectorAll('.citerne-check:checked').forEach(cb => {
+    total += volumes[cb.value] || 0;
+  });
+  document.getElementById('lv-volume-collecte').value = total;
+  calcPerteLivraison();
+};
+
+window.calcPerteLivraison = function() {
+  const collecte = parseInt(document.getElementById('lv-volume-collecte').value) || 0;
+  const recu     = parseInt(document.getElementById('lv-volume-recu').value)     || 0;
+  const perte    = collecte - recu;
+  const pct      = collecte > 0 ? (perte / collecte * 100).toFixed(2) : '0.00';
+  const perteEl  = document.getElementById('lv-perte-calc');
+  const pctEl    = document.getElementById('lv-pct-calc');
+  perteEl.textContent = recu > 0 && perte >= 0 ? fmtInt(perte) + ' L' : '—';
+  pctEl.textContent   = collecte > 0 && recu > 0 ? pct + '%' : '—';
+  pctEl.style.color   = parseFloat(pct) > 3 ? 'var(--danger)' : parseFloat(pct) > 2 ? 'var(--warning)' : 'var(--accent)';
+  document.getElementById('lv-alert').style.display = (recu > 0 && parseFloat(pct) > 2) ? 'flex' : 'none';
+};
+
+window.validerLivraisonUsine = function() {
+  const recu      = document.getElementById('lv-volume-recu').value;
+  const chauffeur = document.getElementById('lv-chauffeur').value.trim();
+  const bl        = document.getElementById('lv-bl').value.trim();
+  if (!recu || parseInt(recu) <= 0) { alert('Veuillez saisir le volume reçu par la centrale.'); return; }
+  if (!chauffeur) { alert('Veuillez saisir le nom du chauffeur.'); return; }
+  if (!bl)        { alert('Veuillez saisir le numéro de bon de livraison.'); return; }
+  closeModal('modal-livraison-usine');
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
+  toast.innerHTML = `<i class="ri-check-line"></i> Livraison ${parseInt(recu).toLocaleString('fr-TN')} L enregistrée — BL ${bl}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+};
 </script>
 </body>
 </html>

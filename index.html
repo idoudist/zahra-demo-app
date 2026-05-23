@@ -4,66 +4,250 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DropWise — SMBSA Ezahra</title>
-  <link rel="stylesheet" href="css/style.css">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #071e2e 0%, #0d4f6e 55%, #1a7fa3 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; }
+    .brand-sep { width: 1px; height: 28px; background: rgba(255,255,255,0.25); }
+    .brand-client { font-size: 13px; opacity: 0.75; }
+    .topbar-badge {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 11.5px;
+      opacity: 0.85;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 52px 20px 40px;
+      flex-shrink: 0;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 11.5px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 { font-size: 38px; font-weight: 800; line-height: 1.2; margin-bottom: 14px; }
+    .hero h1 span { color: #7dd3fc; }
+    .hero p { font-size: 15px; opacity: 0.7; max-width: 520px; margin: 0 auto; }
+
+    /* ── CARDS GRID ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 10px 24px 56px;
+      flex: 1;
+      align-content: start;
+    }
+
+    .app-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 28px 26px 24px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 18px 18px 0 0;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .app-card.erp::before   { background: linear-gradient(90deg, #1a7fa3, #0d4f6e); }
+    .app-card.portail::before { background: linear-gradient(90deg, #27ae60, #16a085); }
+    .app-card.iot::before   { background: linear-gradient(90deg, #8e44ad, #2980b9); }
+
+    .app-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+    .app-card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 54px; height: 54px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 18px;
+      flex-shrink: 0;
+    }
+    .erp  .card-icon { background: rgba(26,127,163,0.25); color: #7dd3fc; }
+    .portail .card-icon { background: rgba(39,174,96,0.25); color: #86efac; }
+    .iot  .card-icon { background: rgba(142,68,173,0.25); color: #c4b5fd; }
+
+    .card-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .card-desc { font-size: 13px; opacity: 0.65; margin-bottom: 20px; line-height: 1.55; }
+
+    .card-features { list-style: none; margin-bottom: 24px; display: flex; flex-direction: column; gap: 7px; }
+    .card-features li {
+      font-size: 12.5px;
+      opacity: 0.75;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-features li i { font-size: 14px; opacity: 0.6; flex-shrink: 0; }
+
+    .card-btn {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 0;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .app-card:hover .card-btn { background: rgba(255,255,255,0.15); }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 18px;
+      font-size: 11.5px;
+      opacity: 0.45;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 820px) {
+      .cards-grid { grid-template-columns: 1fr; max-width: 460px; }
+      .hero h1 { font-size: 28px; }
+      .topbar { padding: 14px 20px; }
+      .topbar-badge { display: none; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 12px 16px; }
+      .brand-logo { font-size: 20px; }
+      .hero { padding: 36px 16px 28px; }
+      .hero h1 { font-size: 24px; }
+      .cards-grid { padding: 10px 16px 40px; }
+    }
+  </style>
 </head>
 <body>
-<div class="login-page">
-  <div class="login-box">
-    <div class="login-header">
-      <div class="login-logo">DropWise</div>
-      <div class="login-tagline">Technologie — Solutions IoT Agricoles</div>
-      <div class="login-client"><i class="ri-building-2-line"></i> &nbsp;SMBSA Ezahra — CDC-EZAHRA-DW-2026</div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">DropWise</div>
+      <div class="brand-sep"></div>
+      <div class="brand-client"><i class="ri-building-2-line"></i> &nbsp;SMBSA Ezahra</div>
     </div>
-
-    <div class="login-body">
-      <div class="form-group">
-        <label class="form-label">Identifiant</label>
-        <input class="form-control" value="admin" type="text">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Mot de passe</label>
-        <input class="form-control" value="••••••••" type="password">
-      </div>
-
-      <div style="margin: 20px 0 12px;">
-        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
-          Accéder en tant que :
-        </div>
-        <div class="role-cards">
-          <a href="erp/dashboard.html" class="role-card">
-            <div class="role-icon erp"><i class="ri-computer-line"></i></div>
-            <div>
-              <div class="role-name">ERP Backoffice</div>
-              <div class="role-desc">Gestion interne — collecte, comptabilité, stocks, paie</div>
-            </div>
-            <i class="ri-arrow-right-line" style="margin-left:auto;color:var(--text-muted);"></i>
-          </a>
-          <a href="portail/index.html" class="role-card">
-            <div class="role-icon portail"><i class="ri-plant-line"></i></div>
-            <div>
-              <div class="role-name">Portail Agriculteurs</div>
-              <div class="role-desc">Espace personnel — relevés, livraisons, factures</div>
-            </div>
-            <i class="ri-arrow-right-line" style="margin-left:auto;color:var(--text-muted);"></i>
-          </a>
-          <a href="iot/index.html" class="role-card">
-            <div class="role-icon iot"><i class="ri-sensor-line"></i></div>
-            <div>
-              <div class="role-name">Supervision IoT Silos</div>
-              <div class="role-desc">Monitoring temps réel — niveaux, alertes, historique</div>
-            </div>
-            <i class="ri-arrow-right-line" style="margin-left:auto;color:var(--text-muted);"></i>
-          </a>
-        </div>
-      </div>
-
-      <div style="text-align:center;margin-top:20px;font-size:11.5px;color:var(--text-muted);">
-        <i class="ri-shield-check-line"></i>
-        Connexion sécurisée — Déploiement local IIS
-      </div>
-    </div>
+    <div class="topbar-badge"><i class="ri-map-pin-line"></i> &nbsp;Chorbane, Mahdia — Tunisie</div>
   </div>
-</div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag"><i class="ri-leaf-line"></i> Plateforme de gestion agricole</div>
+    <h1>Bienvenue sur <span>DropWise</span></h1>
+    <p>Sélectionnez votre espace pour accéder à l'application correspondante.</p>
+  </div>
+
+  <!-- 3 APP CARDS -->
+  <div class="cards-grid">
+
+    <!-- ERP BACKOFFICE -->
+    <a class="app-card erp" href="erp/login.html" target="_blank">
+      <div class="card-icon"><i class="ri-computer-line"></i></div>
+      <div class="card-title">ERP Backoffice</div>
+      <div class="card-desc">Gestion interne complète de la coopérative — réservé au personnel SMBSA Ezahra.</div>
+      <ul class="card-features">
+        <li><i class="ri-drop-line"></i> Collecte de lait & séances</li>
+        <li><i class="ri-plant-line"></i> Gestion des agriculteurs</li>
+        <li><i class="ri-archive-line"></i> Stocks, achats & ventes</li>
+        <li><i class="ri-bank-line"></i> Comptabilité & paie</li>
+      </ul>
+      <div class="card-btn"><i class="ri-login-box-line"></i> Accéder au backoffice <i class="ri-external-link-line"></i></div>
+    </a>
+
+    <!-- PORTAIL AGRICULTEURS -->
+    <a class="app-card portail" href="portail/login.html" target="_blank">
+      <div class="card-icon"><i class="ri-plant-fill"></i></div>
+      <div class="card-title">Portail Agriculteurs</div>
+      <div class="card-desc">Espace personnel des adhérents — consultez vos relevés, livraisons et solde de compte.</div>
+      <ul class="card-features">
+        <li><i class="ri-drop-line"></i> Historique de vos livraisons</li>
+        <li><i class="ri-wallet-line"></i> Solde & relevé mensuel</li>
+        <li><i class="ri-file-list-line"></i> Achats au magasin</li>
+        <li><i class="ri-smartphone-line"></i> Accessible depuis smartphone</li>
+      </ul>
+      <div class="card-btn"><i class="ri-login-box-line"></i> Accéder au portail <i class="ri-external-link-line"></i></div>
+    </a>
+
+    <!-- IOT SILOS -->
+    <a class="app-card iot" href="iot/login.html" target="_blank">
+      <div class="card-icon"><i class="ri-sensor-line"></i></div>
+      <div class="card-title">Supervision IoT Silos</div>
+      <div class="card-desc">Monitoring temps réel des silos à grains — niveaux, alertes et historique des capteurs.</div>
+      <ul class="card-features">
+        <li><i class="ri-bar-chart-box-line"></i> Niveaux en temps réel</li>
+        <li><i class="ri-alarm-warning-line"></i> Alertes automatiques</li>
+        <li><i class="ri-history-line"></i> Historique & tendances</li>
+        <li><i class="ri-wifi-line"></i> 3 silos connectés (LoRa)</li>
+      </ul>
+      <div class="card-btn"><i class="ri-login-box-line"></i> Accéder au monitoring <i class="ri-external-link-line"></i></div>
+    </a>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    DropWise Technologie · drop.wise@outlook.com · CDC-EZAHRA-DW-2026 · © 2026
+  </div>
+
 </body>
 </html>

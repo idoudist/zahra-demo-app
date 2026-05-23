@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — ERP Backoffice SMBSA Ezahra</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #071e2e 0%, #0d4f6e 60%, #1a7fa3 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-box {
+      background: #fff;
+      border-radius: 16px;
+      width: 420px;
+      max-width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .auth-header {
+      background: #0b2537;
+      padding: 26px 28px 22px;
+      text-align: center;
+    }
+    .auth-logo { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 2.5px; }
+    .auth-tagline { font-size: 10px; color: #8fb3c8; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 3px; }
+    .auth-client {
+      margin-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: #a8d4e8;
+    }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+    .auth-tab:hover { color: #0d4f6e; }
+    .auth-tab.active { color: #0d4f6e; border-bottom-color: #0d4f6e; font-weight: 600; }
+
+    /* Body */
+    .auth-body { padding: 24px 28px 28px; }
+    .auth-panel { display: none; }
+    .auth-panel.active { display: block; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12.5px; font-weight: 500; margin-bottom: 5px; color: #374151; }
+    .form-control {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 13px;
+      color: #1e293b;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus { outline: none; border-color: #1a7fa3; box-shadow: 0 0 0 3px rgba(26,127,163,0.1); }
+
+    .input-icon { position: relative; }
+    .input-icon i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 15px; }
+    .input-icon .form-control { padding-left: 32px; }
+
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .forgot { text-align: right; margin-top: -6px; margin-bottom: 14px; }
+    .forgot a { font-size: 12px; color: #1a7fa3; text-decoration: none; }
+    .forgot a:hover { text-decoration: underline; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 11px;
+      background: #0d4f6e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+    .btn-submit:hover { background: #0a3d56; }
+
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 18px 0; color: #94a3b8; font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #e2e8f0;
+    }
+
+    .demo-hint {
+      background: #f0f8ff;
+      border: 1px solid #bae0fd;
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #0369a1;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+    .demo-hint i { margin-top: 1px; flex-shrink: 0; }
+
+    .footer-note { text-align: center; margin-top: 18px; font-size: 11.5px; color: #94a3b8; }
+    .footer-note a { color: #1a7fa3; text-decoration: none; }
+
+    .select-control {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 13px;
+      color: #1e293b;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+    }
+    .select-control:focus { outline: none; border-color: #1a7fa3; }
+
+    .back-home {
+      position: fixed; top: 16px; left: 16px;
+      display: flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.7);
+      font-size: 12.5px;
+      text-decoration: none;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: background 0.15s;
+    }
+    .back-home:hover { background: rgba(255,255,255,0.18); color: white; }
+  </style>
+</head>
+<body>
+
+  <a class="back-home" href="../index.html"><i class="ri-arrow-left-line"></i> Accueil</a>
+
+  <div class="auth-box">
+
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="auth-logo">DropWise</div>
+      <div class="auth-tagline">ERP Backoffice — SMBSA Ezahra</div>
+      <div class="auth-client"><i class="ri-building-2-line"></i> SMBSA Ezahra</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')"><i class="ri-login-box-line"></i> &nbsp;Connexion</div>
+      <div class="auth-tab" onclick="switchTab('signup')"><i class="ri-user-add-line"></i> &nbsp;Créer un compte</div>
+    </div>
+
+    <!-- Body -->
+    <div class="auth-body">
+
+      <!-- LOGIN PANEL -->
+      <div class="auth-panel active" id="panel-login">
+        <div class="demo-hint">
+          <i class="ri-information-line"></i>
+          <span><strong>Démo</strong> — saisissez n'importe quelles valeurs et cliquez Se connecter.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adresse email</label>
+          <div class="input-icon">
+            <i class="ri-mail-line"></i>
+            <input class="form-control" type="email" placeholder="prenom.nom@smbsa-ezahra.tn" value="admin@smbsa-ezahra.tn">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe</label>
+          <div class="input-icon">
+            <i class="ri-lock-line"></i>
+            <input class="form-control" type="password" placeholder="••••••••" value="••••••••">
+          </div>
+        </div>
+        <div class="forgot"><a href="#">Mot de passe oublié ?</a></div>
+        <button class="btn-submit" onclick="window.location.href='dashboard.html'">
+          <i class="ri-login-box-line"></i> Se connecter
+        </button>
+        <div class="footer-note">
+          Pas encore de compte ? <a href="#" onclick="switchTab('signup');return false">Créer un compte</a>
+        </div>
+      </div>
+
+      <!-- SIGNUP PANEL -->
+      <div class="auth-panel" id="panel-signup">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Prénom</label>
+            <input class="form-control" type="text" placeholder="Prénom">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom</label>
+            <input class="form-control" type="text" placeholder="Nom de famille">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adresse email professionnelle</label>
+          <div class="input-icon">
+            <i class="ri-mail-line"></i>
+            <input class="form-control" type="email" placeholder="prenom.nom@smbsa-ezahra.tn">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Poste / Rôle</label>
+          <select class="select-control">
+            <option>— Sélectionner un rôle —</option>
+            <option>Comptable</option>
+            <option>Responsable Collecte</option>
+            <option>Magasinier</option>
+            <option>Responsable RH</option>
+            <option>Direction</option>
+            <option>Lecture seule</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe</label>
+          <div class="input-icon">
+            <i class="ri-lock-line"></i>
+            <input class="form-control" type="password" placeholder="Minimum 8 caractères">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmer le mot de passe</label>
+          <div class="input-icon">
+            <i class="ri-lock-2-line"></i>
+            <input class="form-control" type="password" placeholder="Répéter le mot de passe">
+          </div>
+        </div>
+        <button class="btn-submit" onclick="window.location.href='dashboard.html'">
+          <i class="ri-user-add-line"></i> Créer le compte
+        </button>
+        <div class="footer-note">
+          Déjà un compte ? <a href="#" onclick="switchTab('login');return false">Se connecter</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
+      });
+      document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+      document.getElementById('panel-signup').classList.toggle('active', tab === 'signup');
+    }
+  </script>
+</body>
+</html>

@@ -318,6 +318,9 @@ Pointage
 | **Saisie des pesées** | Pour chaque agriculteur : quantité en kg (précision au gramme), qualité (grasse/normale/allégée ou code qualité configurable), température, heure de saisie, observations. | La saisie est possible uniquement pendant une séance ouverte. Toute correction ultérieure est tracée dans le journal d'audit avec motif obligatoire. |
 | **Prix du lait** | Barème de prix configurable par période (date début, date fin, prix/litre). Historique complet des barèmes. Application automatique du bon prix selon la date de séance. | Le prix est verrouillé à la clôture de la séance. Toute modification de prix après clôture nécessite une autorisation administrateur. |
 | **Bon de réception** | Génération automatique à la clôture de la séance : récapitulatif des pesées, quantité totale, montant calculé, signature collecteur. Impression PDF. | Numérotation automatique séquentielle et non modifiable. |
+| **Gestion des citernes** | Suivi en temps réel du niveau de remplissage de chaque citerne (volume actuel / capacité, % remplissage). Statuts : actif, nettoyage, hors service. 3 citernes dans la démo : CIT-A (5 000 L), CIT-B (8 000 L), CIT-C (5 000 L). | Une citerne en nettoyage est exclue du calcul de stockage disponible. |
+| **Livraison centrale laitière** | Enregistrement journalier de la livraison à la centrale laitière : sélection des citernes vidées, volume collecté (auto), volume reçu par la centrale (saisie manuelle BL), chauffeur, numéro de bon de livraison, heure de départ. | Le volume collecté est calculé comme la somme des volumes des citernes sélectionnées. La livraison ne peut être enregistrée sans un numéro de BL valide. |
+| **Calcul des pertes** | Calcul automatique des pertes = volume collecté − volume reçu centrale. Suivi par cause estimée : (1) mauvaise estimation collecteur, (2) refroidissement/contraction du lait, (3) perte citerne/robinet. Rapport mensuel des pertes avec % moyen et tendance. | Alerte automatique si le % de perte dépasse le seuil configuré (défaut : 2%). La cause estimée est obligatoire si % > seuil. |
 | **Rapprochement usine** | Saisie de la quantité réceptionnée à l'usine. Calcul automatique des écarts (pertes) entre collecte et réception. Rapport d'écart. | Alerte si les pertes dépassent un seuil configurable (ex. 2%). |
 | **Règlements collecteurs** | Calcul du montant dû à chaque collecteur (commission sur volume collecté ou forfait, configurable). Enregistrement du paiement. | Liaison automatique avec la comptabilité (écriture comptable générée). |
 | **Compte courant agriculteur** | Chaque agriculteur a un compte courant : crédit collecte, débit achats magasin, débit avances, solde net. Consultation en temps réel. | Le solde peut être négatif (si avances importantes). |
@@ -339,13 +342,17 @@ Pointage
        ↓
 4. Clôture séance → génération bon de réception
        ↓
-5. Saisie réception usine
+5. Stockage en citerne (niveau citerne mis à jour automatiquement)
        ↓
-6. Calcul écart (pertes) → alerte si > seuil
+6. Livraison journalière à la centrale laitière
+       → saisie : volume reçu (BL), chauffeur, numéro BL
        ↓
-7. Fin de mois : validation → génération relevés agriculteurs
+7. Calcul pertes (collecté − reçu) → alerte si % > seuil (2%)
+       → cause estimée obligatoire si dépassement
        ↓
-8. Calcul règlements collecteurs
+8. Fin de mois : validation → génération relevés agriculteurs
+       ↓
+9. Calcul règlements collecteurs
 ```
 
 #### Modèle de données (simplifié)
@@ -381,6 +388,19 @@ BonReception
 
 ReceptionUsine
   id, seance_id, quantite_recue, date_heure, observations
+
+Citerne
+  id, code (CIT-A/B/C), nom, capacite_litres,
+  volume_actuel, statut (actif/nettoyage/hors_service)
+
+LivraisonCentrale
+  id, date, centrale_id, volume_collecte, volume_recu,
+  pertes_litres, pct_pertes, cause_estimee,
+  chauffeur, numero_bl, heure_depart, statut, observations
+
+AlertePerte
+  id, livraison_id, pct_perte, seuil_alerte,
+  notifie_le, acquitte_par
 
 CompteAgriculteur
   id, agriculteur_id, solde_actuel, date_maj
@@ -646,6 +666,9 @@ Les fonctionnalités suivantes ont été intégrées au périmètre après valid
 | **Services Zahra basiques** (enregistrement des interventions : consultations, vaccinations, inséminations, traitements, analyses) | ✅ Inclus dans A2 — suivi simple, pas de logiciel vétérinaire dédié | Module A2 — Collecte de lait |
 | **Rapports collecte par secteur** (diagrammes Chart.js : barres matin/soir, doughnut répartition, courbe évolution 7 jours) | ✅ Inclus dans A2 | Module A2 — Collecte de lait |
 | **Correction de pesée avec motif** (modal d'audit : quantité actuelle → nouvelle quantité, motif obligatoire, tracé journal) | ✅ Inclus dans A2 — règle R1 | Module A2 — Collecte de lait |
+| **Gestion des citernes** (suivi niveau/capacité de chaque citerne, statut actif/nettoyage, visualisation % remplissage) | ✅ Inclus dans A2 | Module A2 — Collecte de lait |
+| **Livraison centrale laitière** (enregistrement journalier : citernes vidées, volume collecté auto, volume reçu BL, chauffeur, numéro bon de livraison) | ✅ Inclus dans A2 | Module A2 — Collecte de lait |
+| **Calcul et suivi des pertes** (pertes = collecté − reçu, 3 causes : estimation/refroidissement/citerne, KPIs mensuels, alerte automatique si % > 2%) | ✅ Inclus dans A2 — règle R2 | Module A2 — Collecte de lait |
 | **Interface web responsive** (ERP accessible smartphone et tablette, menu hamburger mobile) | ✅ Inclus sans surcoût | Transverse |
 
 > ✅ **Décision** : Les services vétérinaires sont inclus sous la forme d'un **enregistrement d'interventions simple** (type, technicien, coût, statut), rattaché à la fiche agriculteur. Il ne s'agit **pas** d'un logiciel vétérinaire dédié (dossiers cliniques, ordonnances, pharmacie) — cela reste hors périmètre.

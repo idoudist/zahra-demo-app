@@ -9,8 +9,48 @@
   <style>
     body { background: #f0f3f6; }
     .portail-wrapper { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; background: #f0f3f6; }
-    .page-section { display: none; padding-bottom: 70px; }
+    .page-section { display: none; padding-bottom: 74px; }
     .page-section.active { display: block; }
+
+    /* Month nav */
+    .month-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      background: white; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .month-nav-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1px solid var(--border); background: white;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 18px; color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .month-nav-btn:hover:not(:disabled) { background: var(--primary-xlight); color: var(--primary); border-color: var(--primary-light); }
+    .month-nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .month-nav-label { font-size: 15px; font-weight: 700; color: var(--text); }
+
+    /* KPI strip */
+    .liv-kpis { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .liv-kpi { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; box-shadow: var(--shadow-sm); }
+    .liv-kpi .val { font-size: 15px; font-weight: 700; }
+    .liv-kpi .lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+    /* Livraisons table */
+    .liv-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .liv-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 320px; }
+    .liv-table th { padding: 8px 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 2px solid var(--border); white-space: nowrap; }
+    .liv-table td { padding: 8px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .liv-table tbody tr:last-child td { border-bottom: none; }
+    .liv-table tfoot td { padding: 10px 8px; font-weight: 700; border-top: 2px solid var(--border); background: #f8fafc; font-size: 12px; }
+    .col-matin { background: #fefce8; }
+    .col-soir  { background: #f5f3ff; }
+    .th-matin { background: #fef9c3; color: #a16207 !important; }
+    .th-soir  { background: #ede9fe; color: #6d28d9 !important; }
+
+    /* periode badge */
+    .badge-matin { background: #fef9c3; color: #a16207; padding: 1px 7px; border-radius: 10px; font-size: 10.5px; font-weight: 600; }
+    .badge-soir  { background: #ede9fe; color: #6d28d9; padding: 1px 7px; border-radius: 10px; font-size: 10.5px; font-weight: 600; }
   </style>
 </head>
 <body class="portail-body">
@@ -22,32 +62,29 @@
       <div style="font-size:12px;opacity:0.7;margin-bottom:2px">SMBSA Ezahra</div>
       <h1>Portail Agriculteurs</h1>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white">BA</div>
-    </div>
+    <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white">BA</div>
   </div>
 
-  <!-- Accueil -->
+  <!-- ══════════════ ACCUEIL ══════════════ -->
   <div class="page-section active" id="sec-accueil">
     <div class="portail-content" style="padding-top:16px">
 
-      <!-- Bonjour -->
       <div style="margin-bottom:14px">
         <div style="font-size:13px;color:var(--text-muted)">Bonjour,</div>
         <div style="font-size:20px;font-weight:700;color:var(--text)">Ben Ali Ahmed</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:2px"><i class="ri-map-pin-line"></i> Chorbane Nord — Code : AGR-0042</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px"><i class="ri-map-pin-line"></i> Chorbane Nord — Code : AGR-042</div>
       </div>
 
       <!-- Solde card -->
-      <div class="portail-card" style="background:linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);border:none;margin-bottom:14px">
+      <div class="portail-card" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);border:none;margin-bottom:14px">
         <div style="padding:20px">
-          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Solde disponible</div>
-          <div style="font-size:38px;font-weight:800;color:white;line-height:1">4 256,300</div>
-          <div style="font-size:14px;color:rgba(255,255,255,0.8);margin-top:4px">TND — après avances</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Solde disponible</div>
+          <div style="font-size:36px;font-weight:800;color:white;line-height:1">4 256,300</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px">TND — après avances</div>
           <div style="display:flex;gap:16px;margin-top:14px">
             <div style="text-align:center">
-              <div style="font-size:16px;font-weight:700;color:white">248 600</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.7)">L collectés — Mai</div>
+              <div id="accueil-total-l" style="font-size:16px;font-weight:700;color:white">—</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.7)">L collectés ce mois</div>
             </div>
             <div style="width:1px;background:rgba(255,255,255,0.2)"></div>
             <div style="text-align:center">
@@ -63,44 +100,32 @@
         </div>
       </div>
 
-      <!-- Dernières livraisons -->
+      <!-- Dernières livraisons preview -->
       <div class="portail-card">
         <div class="portail-card-header">
           <span><i class="ri-drop-line text-primary"></i> Dernières livraisons</span>
-          <span onclick="switchTo('sec-livraisons')" style="font-size:12px;color:var(--primary-light);cursor:pointer">Tout voir</span>
+          <span onclick="switchTo('sec-livraisons','nav-livraisons')" style="font-size:12px;color:var(--primary-light);cursor:pointer">Tout voir →</span>
         </div>
-        <div class="portail-card-body" style="padding:0 16px">
-          ${MOCK.agriculteur.livraisons.slice(0,5).map(l => `
-            <div class="portail-row">
-              <div>
-                <div style="font-size:13px;font-weight:500">${l.date}</div>
-                <div style="font-size:11px;color:var(--text-muted)">${l.periode}</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-weight:600">${l.qte} L</div>
-                <div style="font-size:12px;color:var(--accent);font-weight:600">${l.montant.toFixed(3)} TND</div>
-              </div>
-            </div>`).join('')}
-        </div>
+        <div id="accueil-livraisons-preview" style="padding:0 16px"></div>
       </div>
 
       <!-- Relevé mensuel -->
-      <div class="portail-card">
+      <div class="portail-card" style="margin-top:12px">
         <div class="portail-card-header">
           <span><i class="ri-file-text-line text-primary"></i> Relevé mensuel</span>
         </div>
         <div class="portail-card-body">
           <div style="display:flex;gap:10px;margin-bottom:12px">
             <div style="flex:1;background:#f8fafc;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)">
-              <div style="font-size:18px;font-weight:700;color:var(--primary)">3 280 L</div>
-              <div style="font-size:10px;color:var(--text-muted)">Total livré en Mai</div>
+              <div id="accueil-releve-l" style="font-size:18px;font-weight:700;color:var(--primary)">—</div>
+              <div style="font-size:10px;color:var(--text-muted)">Total livré — Mai</div>
             </div>
             <div style="flex:1;background:#f8fafc;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)">
-              <div style="font-size:18px;font-weight:700;color:var(--accent)">4 428 TND</div>
+              <div id="accueil-releve-tnd" style="font-size:18px;font-weight:700;color:var(--accent)">—</div>
               <div style="font-size:10px;color:var(--text-muted)">Montant brut</div>
             </div>
           </div>
-          <button style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <button style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">
             <i class="ri-download-line"></i> Télécharger relevé Mai 2026 (PDF)
           </button>
         </div>
@@ -109,40 +134,79 @@
     </div>
   </div>
 
-  <!-- Livraisons -->
+  <!-- ══════════════ LIVRAISONS ══════════════ -->
   <div class="page-section" id="sec-livraisons">
     <div class="portail-content" style="padding-top:16px">
-      <h2 style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--text)">Toutes mes livraisons</h2>
 
-      <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px">
-        <button style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--primary);color:white;font-size:12px;cursor:pointer;white-space:nowrap">Mai 2026</button>
-        <button style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:white;font-size:12px;cursor:pointer;white-space:nowrap">Avril 2026</button>
-        <button style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:white;font-size:12px;cursor:pointer;white-space:nowrap">Mars 2026</button>
+      <!-- Month navigation -->
+      <div class="month-nav">
+        <button class="month-nav-btn" id="btn-prev-mois" onclick="prevMois()">
+          <i class="ri-arrow-left-s-line"></i>
+        </button>
+        <div style="text-align:center">
+          <div class="month-nav-label" id="label-mois">Mai 2026</div>
+          <div style="font-size:11px;color:var(--text-muted)" id="label-nb-jours">— jours</div>
+        </div>
+        <button class="month-nav-btn" id="btn-next-mois" onclick="nextMois()">
+          <i class="ri-arrow-right-s-line"></i>
+        </button>
       </div>
 
+      <!-- KPI strip -->
+      <div class="liv-kpis">
+        <div class="liv-kpi">
+          <div class="val text-primary" id="kpi-total-l">—</div>
+          <div class="lbl">Litres</div>
+        </div>
+        <div class="liv-kpi">
+          <div class="val text-success" id="kpi-total-tnd">—</div>
+          <div class="lbl">Montant TND</div>
+        </div>
+        <div class="liv-kpi">
+          <div class="val" id="kpi-nb-seances" style="color:var(--warning)">—</div>
+          <div class="lbl">Séances</div>
+        </div>
+      </div>
+
+      <!-- Table card -->
       <div class="portail-card">
-        <div class="portail-card-body" style="padding:0 16px">
-          ${MOCK.agriculteur.livraisons.map(l => `
-            <div class="portail-row">
-              <div>
-                <div style="font-size:13px;font-weight:500">${l.date}</div>
-                <div style="font-size:11px;color:var(--text-muted)">${l.periode} — ${l.prix.toFixed(3)} TND/L</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-weight:600">${l.qte} L</div>
-                <div style="font-size:12px;color:var(--accent);font-weight:600">${l.montant.toFixed(3)} TND</div>
-              </div>
-            </div>`).join('')}
-        </div>
-        <div style="padding:12px 16px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:700">
-          <span>Total Mai 2026</span>
-          <span style="color:var(--accent)">${MOCK.agriculteur.livraisons.reduce((a,l)=>a+l.montant,0).toFixed(3)} TND</span>
+        <div class="liv-table-wrap">
+          <table class="liv-table">
+            <thead>
+              <tr>
+                <th rowspan="2" style="text-align:left;padding-left:12px;border-right:1px solid var(--border)">Date</th>
+                <th colspan="2" class="th-matin" style="text-align:center;border-right:1px solid #fde68a">
+                  <span class="badge-matin"><i class="ri-sun-line"></i> Matin</span>
+                </th>
+                <th colspan="2" class="th-soir" style="text-align:center;border-right:1px solid var(--border)">
+                  <span class="badge-soir"><i class="ri-moon-line"></i> Soir</span>
+                </th>
+                <th rowspan="2" style="text-align:right;padding-right:12px">Total<br><span style="font-size:9px;font-weight:400">TND</span></th>
+              </tr>
+              <tr>
+                <th class="th-matin" style="text-align:right">Litres</th>
+                <th class="th-matin" style="text-align:right;border-right:1px solid #fde68a">TND</th>
+                <th class="th-soir" style="text-align:right">Litres</th>
+                <th class="th-soir" style="text-align:right;border-right:1px solid var(--border)">TND</th>
+              </tr>
+            </thead>
+            <tbody id="livraisons-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted)">Chargement...</td></tr>
+            </tbody>
+            <tfoot id="livraisons-tfoot"></tfoot>
+          </table>
         </div>
       </div>
+
+      <!-- Download -->
+      <button id="btn-download-releve" style="width:100%;margin-top:12px;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">
+        <i class="ri-download-line"></i> Télécharger relevé PDF
+      </button>
+
     </div>
   </div>
 
-  <!-- Compte -->
+  <!-- ══════════════ COMPTE ══════════════ -->
   <div class="page-section" id="sec-compte">
     <div class="portail-content" style="padding-top:16px">
       <h2 style="font-size:16px;font-weight:700;margin-bottom:14px">Mon compte</h2>
@@ -150,15 +214,16 @@
       <div class="portail-card">
         <div class="portail-card-header"><span><i class="ri-user-line"></i> Informations personnelles</span></div>
         <div class="portail-card-body">
-          <div class="portail-row"><span class="text-muted text-sm">Code agriculteur</span><span class="font-semi">AGR-0042</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Code agriculteur</span><span class="font-semi">AGR-042</span></div>
           <div class="portail-row"><span class="text-muted text-sm">Nom & Prénom</span><span class="font-semi">Ben Ali Ahmed</span></div>
           <div class="portail-row"><span class="text-muted text-sm">Secteur</span><span class="font-semi">Chorbane Nord</span></div>
           <div class="portail-row"><span class="text-muted text-sm">Collecteur assigné</span><span class="font-semi">Khediri Moncef</span></div>
-          <div class="portail-row"><span class="text-muted text-sm">Téléphone</span><span class="font-semi">xx xxx xxx</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Vaches laitières</span><span class="font-semi">8 vaches</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Adhérent depuis</span><span class="font-semi">15/03/2018</span></div>
         </div>
       </div>
 
-      <div class="portail-card">
+      <div class="portail-card" style="margin-top:12px">
         <div class="portail-card-header"><span><i class="ri-bill-line"></i> Avances en cours</span></div>
         <div class="portail-card-body">
           <div class="portail-row"><span class="text-muted text-sm">Avance accordée</span><span class="text-danger font-semi">500,000 TND</span></div>
@@ -167,14 +232,16 @@
         </div>
       </div>
 
-      <div class="portail-card">
-        <div class="portail-card-header"><span><i class="ri-shopping-bag-line"></i> Mes achats produits</span></div>
+      <div class="portail-card" style="margin-top:12px">
+        <div class="portail-card-header"><span><i class="ri-shopping-bag-line"></i> Mes achats produits — Mai 2026</span></div>
         <div class="portail-card-body" style="padding:0 16px">
-          <div class="portail-row"><span>Orge 200 kg — 15/05/2026</span><span class="font-semi">170,000 TND</span></div>
-          <div class="portail-row"><span>Concentré 50 kg — 10/05/2026</span><span class="font-semi">60,000 TND</span></div>
+          <div class="portail-row"><span>Orge 200 kg — 22/05/2026</span><span class="font-semi">170,000 TND</span></div>
+          <div class="portail-row"><span>Concentré 50 kg — 15/05/2026</span><span class="font-semi">60,000 TND</span></div>
+          <div class="portail-row"><span>Son de blé 100 kg — 08/05/2026</span><span class="font-semi">45,000 TND</span></div>
+          <div class="portail-row" style="border:none"><span>Orge 300 kg — 01/05/2026</span><span class="font-semi">255,000 TND</span></div>
         </div>
         <div style="padding:10px 16px;border-top:1px solid var(--border)">
-          <button style="width:100%;padding:10px;background:var(--primary-xlight);color:var(--primary);border:1px solid var(--primary-light);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+          <button style="width:100%;padding:10px;background:var(--primary-xlight);color:var(--primary);border:1px solid var(--primary-light);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
             <i class="ri-download-line"></i> Télécharger mes factures
           </button>
         </div>
@@ -193,7 +260,7 @@
     <div class="portail-nav-item" id="nav-compte" onclick="switchTo('sec-compte','nav-compte')">
       <i class="ri-user-line"></i>Mon compte
     </div>
-    <a href="../index.html" class="portail-nav-item" style="color:var(--text-muted)">
+    <a href="../index.html" class="portail-nav-item" style="color:var(--text-muted);text-decoration:none">
       <i class="ri-logout-box-line"></i>Déconnexion
     </a>
   </nav>
@@ -202,16 +269,162 @@
 <script src="../js/mock.js"></script>
 <script src="../js/app.js"></script>
 <script>
-  function switchTo(sectionId, navId) {
-    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.portail-nav-item').forEach(n => n.classList.remove('active'));
-    const sec = document.getElementById(sectionId);
-    if (sec) sec.classList.add('active');
-    if (navId) {
-      const nav = document.getElementById(navId);
-      if (nav) nav.classList.add('active');
-    }
+// ===== NAVIGATION =====
+function switchTo(sectionId, navId) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.portail-nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById(sectionId);
+  if (sec) sec.classList.add('active');
+  if (navId) { const nav = document.getElementById(navId); if (nav) nav.classList.add('active'); }
+}
+
+// ===== DONNÉES =====
+const PRIX_L = 1.35;
+const MOIS_NOMS = ['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+// Génère des données de livraisons réalistes pour un mois donné
+function genLivraisons(annee, mois) {
+  const nbJours = new Date(annee, mois, 0).getDate();
+  const rows = [];
+  for (let j = 1; j <= nbJours; j++) {
+    // Pseudo-aléatoire déterministe basé sur le jour/mois/année
+    const hM = ((annee * 31 + mois * 17 + j * 11) % 29);
+    const hS = ((annee * 23 + mois * 13 + j * 19) % 25);
+    const qteM = 68 + hM;          // 68–96 L
+    const qteS = 52 + hS;          // 52–76 L
+    rows.push({
+      jour: j,
+      matin: { qte: qteM, montant: +(qteM * PRIX_L).toFixed(3) },
+      soir:  { qte: qteS, montant: +(qteS * PRIX_L).toFixed(3) }
+    });
   }
+  return rows;
+}
+
+// ===== ÉTAT NAVIGATION MOIS =====
+const MOIS_MIN = { annee: 2026, mois: 1 };
+const MOIS_MAX = { annee: 2026, mois: 5 };
+let currentMois = { annee: 2026, mois: 5 };
+
+function prevMois() {
+  if (currentMois.annee === MOIS_MIN.annee && currentMois.mois <= MOIS_MIN.mois) return;
+  currentMois = currentMois.mois === 1
+    ? { annee: currentMois.annee - 1, mois: 12 }
+    : { annee: currentMois.annee, mois: currentMois.mois - 1 };
+  renderLivraisons();
+}
+
+function nextMois() {
+  if (currentMois.annee === MOIS_MAX.annee && currentMois.mois >= MOIS_MAX.mois) return;
+  currentMois = currentMois.mois === 12
+    ? { annee: currentMois.annee + 1, mois: 1 }
+    : { annee: currentMois.annee, mois: currentMois.mois + 1 };
+  renderLivraisons();
+}
+
+// ===== RENDU TABLEAU LIVRAISONS =====
+function renderLivraisons() {
+  const { annee, mois } = currentMois;
+  const data = genLivraisons(annee, mois);
+  const pad = n => String(n).padStart(2, '0');
+
+  // Totaux
+  const totM_L   = data.reduce((s, r) => s + r.matin.qte, 0);
+  const totM_TND = data.reduce((s, r) => s + r.matin.montant, 0);
+  const totS_L   = data.reduce((s, r) => s + r.soir.qte, 0);
+  const totS_TND = data.reduce((s, r) => s + r.soir.montant, 0);
+  const totL     = totM_L + totS_L;
+  const totTND   = totM_TND + totS_TND;
+  const nbSeances = data.length * 2;
+
+  // En-tête navigation
+  document.getElementById('label-mois').textContent = `${MOIS_NOMS[mois]} ${annee}`;
+  document.getElementById('label-nb-jours').textContent = `${data.length} jours · ${nbSeances} séances`;
+
+  // Boutons prev/next
+  const atMin = annee === MOIS_MIN.annee && mois <= MOIS_MIN.mois;
+  const atMax = annee === MOIS_MAX.annee && mois >= MOIS_MAX.mois;
+  const btnPrev = document.getElementById('btn-prev-mois');
+  const btnNext = document.getElementById('btn-next-mois');
+  btnPrev.disabled = atMin;
+  btnNext.disabled = atMax;
+
+  // KPIs
+  document.getElementById('kpi-total-l').textContent   = totL.toLocaleString('fr-TN') + ' L';
+  document.getElementById('kpi-total-tnd').textContent = totTND.toFixed(0) + ' TND';
+  document.getElementById('kpi-nb-seances').textContent = nbSeances;
+
+  // Download label
+  document.getElementById('btn-download-releve').innerHTML =
+    `<i class="ri-download-line"></i> Télécharger relevé ${MOIS_NOMS[mois]} ${annee} (PDF)`;
+
+  // Lignes du tableau
+  document.getElementById('livraisons-tbody').innerHTML = data.map(row => {
+    const date = `${pad(row.jour)}/${pad(mois)}`;
+    const total = (row.matin.montant + row.soir.montant).toFixed(3);
+    return `<tr>
+      <td style="padding-left:12px;font-size:12px;color:var(--text-muted);white-space:nowrap;border-right:1px solid var(--border)">${date}</td>
+      <td class="col-matin" style="text-align:right;font-weight:600">${row.matin.qte}</td>
+      <td class="col-matin" style="text-align:right;font-size:11px;color:#a16207;border-right:1px solid #fde68a">${row.matin.montant.toFixed(3)}</td>
+      <td class="col-soir"  style="text-align:right;font-weight:600">${row.soir.qte}</td>
+      <td class="col-soir"  style="text-align:right;font-size:11px;color:#6d28d9;border-right:1px solid var(--border)">${row.soir.montant.toFixed(3)}</td>
+      <td style="text-align:right;padding-right:12px;font-weight:700;color:var(--accent)">${total}</td>
+    </tr>`;
+  }).join('');
+
+  // Pied de tableau (totaux)
+  document.getElementById('livraisons-tfoot').innerHTML = `
+    <tr>
+      <td style="padding-left:12px;border-right:1px solid var(--border)">Total</td>
+      <td class="col-matin" style="text-align:right;font-weight:700;color:#a16207">${totM_L} L</td>
+      <td class="col-matin" style="text-align:right;font-size:11px;color:#a16207;border-right:1px solid #fde68a">${totM_TND.toFixed(3)}</td>
+      <td class="col-soir"  style="text-align:right;font-weight:700;color:#6d28d9">${totS_L} L</td>
+      <td class="col-soir"  style="text-align:right;font-size:11px;color:#6d28d9;border-right:1px solid var(--border)">${totS_TND.toFixed(3)}</td>
+      <td style="text-align:right;padding-right:12px;color:var(--accent)">${totTND.toFixed(3)} TND</td>
+    </tr>`;
+}
+
+// ===== ACCUEIL : aperçu livraisons (5 derniers jours) =====
+function renderAccueil() {
+  const data = genLivraisons(2026, 5); // Mai 2026
+  const derniers = data.slice(-5).reverse();
+
+  // Met à jour les KPIs de l'accueil
+  const totL   = data.reduce((s, r) => s + r.matin.qte + r.soir.qte, 0);
+  const totTND = data.reduce((s, r) => s + r.matin.montant + r.soir.montant, 0);
+  document.getElementById('accueil-total-l').textContent    = totL.toLocaleString('fr-TN');
+  document.getElementById('accueil-releve-l').textContent   = totL.toLocaleString('fr-TN') + ' L';
+  document.getElementById('accueil-releve-tnd').textContent = totTND.toFixed(0) + ' TND';
+
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('accueil-livraisons-preview').innerHTML = derniers.map(row => `
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:600">${pad(row.jour)}/05/2026</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="text-align:center">
+          <div style="font-size:10px;margin-bottom:2px"><span class="badge-matin">Matin</span></div>
+          <div style="font-size:12px;font-weight:600">${row.matin.qte} L</div>
+        </div>
+        <div style="width:1px;height:28px;background:var(--border)"></div>
+        <div style="text-align:center">
+          <div style="font-size:10px;margin-bottom:2px"><span class="badge-soir">Soir</span></div>
+          <div style="font-size:12px;font-weight:600">${row.soir.qte} L</div>
+        </div>
+        <div style="text-align:right;min-width:72px">
+          <div style="font-size:12px;font-weight:700;color:var(--accent)">${(row.matin.montant + row.soir.montant).toFixed(3)}</div>
+          <div style="font-size:10px;color:var(--text-muted)">TND</div>
+        </div>
+      </div>
+    </div>`).join('') + `<div style="padding:10px 0;text-align:center">
+      <span onclick="switchTo('sec-livraisons','nav-livraisons')" style="font-size:12px;color:var(--primary-light);cursor:pointer">
+        Voir tout l'historique →
+      </span>
+    </div>`;
+}
+
+// ===== INIT =====
+renderLivraisons();
+renderAccueil();
 </script>
 </body>
 </html>
