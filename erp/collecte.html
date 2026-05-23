@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collecte de lait — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .rapport-filter {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .rapport-filter label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .charts-row { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; margin-bottom: 16px; }
+    .chart-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 16px; }
+    .chart-card-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+    .rapport-table-wrap { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .rapport-table-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .rapport-table-header h4 { font-size: 13px; font-weight: 600; }
+    .secteur-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+    .seance-chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .seance-matin  { background: #fef9c3; color: #a16207; }
+    .seance-soir   { background: #ede9fe; color: #6d28d9; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div id="header-container"></div>
+    <div class="page-body">
+
+      <!-- KPIs -->
+      <div class="kpi-grid mb-24" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card blue">
+          <i class="ri-drop-fill kpi-icon"></i>
+          <div class="kpi-label">Collecte aujourd'hui</div>
+          <div class="kpi-value">11 527 <span class="kpi-unit">L</span></div>
+          <div class="kpi-sub">7 séances validées</div>
+        </div>
+        <div class="kpi-card green">
+          <i class="ri-calendar-check-fill kpi-icon"></i>
+          <div class="kpi-label">Collecte du mois</div>
+          <div class="kpi-value">248 600 <span class="kpi-unit">L</span></div>
+          <div class="kpi-sub">Mai 2026 — 22 jours</div>
+        </div>
+        <div class="kpi-card orange">
+          <i class="ri-money-dollar-circle-fill kpi-icon"></i>
+          <div class="kpi-label">Montant du jour</div>
+          <div class="kpi-value">15 562 <span class="kpi-unit">TND</span></div>
+          <div class="kpi-sub">Prix : 1,350 TND/L</div>
+        </div>
+        <div class="kpi-card purple">
+          <i class="ri-map-pin-2-fill kpi-icon"></i>
+          <div class="kpi-label">Secteurs actifs</div>
+          <div class="kpi-value">4 <span class="kpi-unit">secteurs</span></div>
+          <div class="kpi-sub">65 agriculteurs</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="card">
+        <div class="card-body" style="padding-bottom:0">
+          <div class="tabs" data-group="main">
+            <div class="tab active" data-group="main" data-target="tab-saisie"><i class="ri-add-circle-line"></i>Saisie séance</div>
+            <div class="tab" data-group="main" data-target="tab-liste"><i class="ri-list-check"></i>Liste des séances</div>
+            <div class="tab" data-group="main" data-target="tab-collecteurs"><i class="ri-team-line"></i>Secteurs & Collecteurs</div>
+            <div class="tab" data-group="main" data-target="tab-rapports"><i class="ri-bar-chart-2-line"></i>Rapports par secteur</div>
+            <div class="tab" data-group="main" data-target="tab-reglements"><i class="ri-bank-card-line"></i>Règlements</div>
+          </div>
+        </div>
+
+        <!-- ===== SAISIE ===== -->
+        <div id="tab-saisie" class="tab-content active" data-group="main">
+          <div class="card-body">
+            <div class="alert alert-info mb-16">
+              <i class="ri-information-line"></i>
+              <div>Séance du <strong>22/05/2026 — Soir</strong> en cours de saisie. Séance Matin validée.</div>
+            </div>
+            <div class="form-grid-3 mb-16">
+              <div class="form-group">
+                <label class="form-label">Date</label>
+                <input class="form-control" type="date" value="2026-05-22">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Période</label>
+                <select class="form-control"><option>Soir</option><option>Matin</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Prix (TND/L)</label>
+                <input class="form-control" type="number" value="1.350" step="0.001">
+              </div>
+            </div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">Saisie par secteur / collecteur</h3>
+            <div class="table-wrapper mb-16">
+              <table id="tbl-saisie"></table>
+            </div>
+            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+              <div><span class="text-muted text-sm">Total quantité :</span> <strong class="text-primary" style="font-size:16px">11 527 L</strong></div>
+              <div><span class="text-muted text-sm">Total montant :</span> <strong style="font-size:16px">15 561,450 TND</strong></div>
+              <div style="margin-left:auto;display:flex;gap:8px;">
+                <button class="btn btn-light"><i class="ri-printer-line"></i>Bons de réception</button>
+                <button class="btn btn-primary" onclick="openModal('modal-confirm')"><i class="ri-check-line"></i>Valider la séance</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== LISTE SÉANCES ===== -->
+        <div id="tab-liste" class="tab-content" data-group="main">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Séances — Mai 2026</h3>
+              <div class="flex gap-8">
+                <div class="search-bar"><i class="ri-search-line"></i><input placeholder="Rechercher..."></div>
+                <select class="form-control" style="width:auto">
+                  <option>Tous les secteurs</option>
+                  <option>Chorbane Nord</option>
+                  <option>Chorbane Sud</option>
+                  <option>Melloulèche</option>
+                  <option>Sidi Alouane</option>
+                </select>
+                <select class="form-control" style="width:auto">
+                  <option>Toutes périodes</option>
+                  <option>Matin</option>
+                  <option>Soir</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-seances-all"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== SECTEURS & COLLECTEURS ===== -->
+        <div id="tab-collecteurs" class="tab-content" data-group="main">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Secteurs & Collecteurs responsables</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-collecteur')"><i class="ri-add-line"></i>Ajouter secteur</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-collecteurs"></table>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Agriculteurs par secteur</h3>
+            <div id="agriculteurs-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px"></div>
+          </div>
+        </div>
+
+        <!-- ===== RAPPORTS PAR SECTEUR ===== -->
+        <div id="tab-rapports" class="tab-content" data-group="main">
+          <div class="card-body">
+
+            <!-- Filtres -->
+            <div class="rapport-filter">
+              <label><i class="ri-calendar-line"></i> Date :</label>
+              <input class="form-control" type="date" value="2026-05-22" style="width:160px" id="rpt-date">
+              <label><i class="ri-map-pin-line"></i> Secteur :</label>
+              <select class="form-control" style="width:180px" id="rpt-secteur">
+                <option value="all">Tous les secteurs</option>
+                <option>Chorbane Nord</option>
+                <option>Chorbane Sud</option>
+                <option>Melloulèche</option>
+                <option>Sidi Alouane</option>
+              </select>
+              <label><i class="ri-time-line"></i> Période :</label>
+              <select class="form-control" style="width:140px" id="rpt-periode">
+                <option value="all">Matin + Soir</option>
+                <option value="Matin">Matin seulement</option>
+                <option value="Soir">Soir seulement</option>
+              </select>
+              <button class="btn btn-primary btn-sm" style="margin-left:auto"><i class="ri-printer-line"></i>Exporter PDF</button>
+              <button class="btn btn-light btn-sm"><i class="ri-file-excel-line"></i>Excel</button>
+            </div>
+
+            <!-- KPIs rapport -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="rpt-kpis">
+              <div class="kpi-card blue" style="padding:14px">
+                <div class="kpi-label">Total collecté</div>
+                <div class="kpi-value" style="font-size:22px" id="rpt-total-qte">11 527 <span class="kpi-unit">L</span></div>
+              </div>
+              <div class="kpi-card green" style="padding:14px">
+                <div class="kpi-label">Montant total</div>
+                <div class="kpi-value" style="font-size:22px" id="rpt-total-mnt">15 562 <span class="kpi-unit">TND</span></div>
+              </div>
+              <div class="kpi-card orange" style="padding:14px">
+                <div class="kpi-label">Meilleur secteur</div>
+                <div class="kpi-value" style="font-size:16px;margin-top:4px" id="rpt-best">Chorbane Sud</div>
+                <div class="kpi-sub" id="rpt-best-sub">4 095 L — 35,5%</div>
+              </div>
+              <div class="kpi-card purple" style="padding:14px">
+                <div class="kpi-label">Agriculteurs actifs</div>
+                <div class="kpi-value" style="font-size:22px">56 <span class="kpi-unit">/ 65</span></div>
+              </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-row">
+              <div class="chart-card">
+                <div class="chart-card-title"><i class="ri-bar-chart-grouped-line text-primary"></i>Collecte par secteur — Matin & Soir</div>
+                <canvas id="chart-secteur" height="90"></canvas>
+              </div>
+              <div class="chart-card">
+                <div class="chart-card-title"><i class="ri-pie-chart-line text-primary"></i>Répartition % par secteur</div>
+                <canvas id="chart-pie" height="140"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card mb-16">
+              <div class="chart-card-title"><i class="ri-line-chart-line text-primary"></i>Évolution collecte totale — 7 derniers jours (L)</div>
+              <canvas id="chart-evolution" height="55"></canvas>
+            </div>
+
+            <!-- Tableau détaillé -->
+            <div class="rapport-table-wrap">
+              <div class="rapport-table-header">
+                <h4><i class="ri-table-line"></i> &nbsp;Détail par secteur — 22/05/2026</h4>
+                <span class="text-muted text-sm">Prix unitaire : 1,350 TND/L</span>
+              </div>
+              <div class="table-wrapper">
+                <table id="tbl-rapport-secteur"></table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ===== RÈGLEMENTS ===== -->
+        <div id="tab-reglements" class="tab-content" data-group="main">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Règlements collecteurs — Mai 2026</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-reglement')"><i class="ri-add-line"></i>Nouveau règlement</button>
+            </div>
+            <table>
+              <thead><tr><th>Collecteur</th><th>Secteur</th><th>Collecte brute</th><th>Avances</th><th>Net à payer</th><th>Mode</th><th>Statut</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Khediri Moncef</strong></td><td>Chorbane Nord</td><td>38 420 TND</td><td>2 000 TND</td><td class="text-success font-semi">36 420 TND</td><td>Virement</td><td><span class="badge badge-warning">en attente</span></td></tr>
+                <tr><td><strong>Trabelsi Hassen</strong></td><td>Chorbane Sud</td><td>44 850 TND</td><td>1 500 TND</td><td class="text-success font-semi">43 350 TND</td><td>Chèque</td><td><span class="badge badge-warning">en attente</span></td></tr>
+                <tr><td><strong>Ben Salem Ridha</strong></td><td>Melloulèche</td><td>31 200 TND</td><td>0 TND</td><td class="text-success font-semi">31 200 TND</td><td>Espèces</td><td><span class="badge badge-success">payé</span></td></tr>
+                <tr><td><strong>Chaabane Lotfi</strong></td><td>Sidi Alouane</td><td>26 100 TND</td><td>800 TND</td><td class="text-success font-semi">25 300 TND</td><td>Virement</td><td><span class="badge badge-warning">en attente</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal validation -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="ri-check-double-line text-success"></i> &nbsp;Confirmer la validation</h3>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-success mb-16"><i class="ri-check-line"></i>La séance sera définitivement validée.</div>
+      <div class="form-grid-2">
+        <div><div class="text-muted text-sm">Séance</div><div class="font-semi">22/05/2026 — Soir</div></div>
+        <div><div class="text-muted text-sm">Total collecte</div><div class="font-semi">11 527 L</div></div>
+        <div><div class="text-muted text-sm">Montant total</div><div class="font-semi text-success">15 561,450 TND</div></div>
+        <div><div class="text-muted text-sm">Secteurs</div><div class="font-semi">4 secteurs</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-confirm')">Annuler</button>
+      <button class="btn btn-success" onclick="closeModal('modal-confirm')"><i class="ri-check-line"></i>Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal collecteur -->
+<div class="modal-overlay" id="modal-collecteur">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Ajouter secteur / collecteur</h3>
+      <button class="modal-close" onclick="closeModal('modal-collecteur')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Nom du secteur</label><input class="form-control" placeholder="Ex: Ouled Chamekh"></div>
+        <div class="form-group"><label class="form-label">Code secteur</label><input class="form-control" placeholder="SEC-05"></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Collecteur responsable</label><select class="form-control"><option>— Sélectionner —</option><option>Khediri Moncef</option><option>Trabelsi Hassen</option><option>Nouveau collecteur...</option></select></div>
+        <div class="form-group"><label class="form-label">Nombre d'agriculteurs</label><input class="form-control" type="number"></div>
+        <div class="form-group"><label class="form-label">Distance (km)</label><input class="form-control" type="number"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-collecteur')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-collecteur')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal règlement -->
+<div class="modal-overlay" id="modal-reglement">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouveau règlement collecteur</h3>
+      <button class="modal-close" onclick="closeModal('modal-reglement')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Collecteur</label><select class="form-control"><option>Khediri Moncef</option><option>Trabelsi Hassen</option></select></div>
+        <div class="form-group"><label class="form-label">Montant (TND)</label><input class="form-control" type="number" placeholder="0.000"></div>
+        <div class="form-group"><label class="form-label">Date règlement</label><input class="form-control" type="date" value="2026-05-22"></div>
+        <div class="form-group"><label class="form-label">Mode paiement</label><select class="form-control"><option>Virement bancaire</option><option>Chèque</option><option>Espèces</option></select></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Référence</label><input class="form-control" placeholder="VIR-2026-xxx"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-reglement')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-reglement')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = buildSidebar('collecte');
+document.getElementById('header-container').innerHTML = buildHeader('Collecte de lait — Cœur métier', { name: 'Admin Système', initials: 'AS' });
+initTabs();
+
+// ===== SECTEURS DATA =====
+const SECTEURS = [
+  { nom: 'Chorbane Nord',  collecteur: 'Khediri Moncef',  agriculteurs: 14, couleur: '#1a7fa3' },
+  { nom: 'Chorbane Sud',   collecteur: 'Trabelsi Hassen', agriculteurs: 18, couleur: '#27ae60' },
+  { nom: 'Melloulèche',    collecteur: 'Ben Salem Ridha', agriculteurs: 11, couleur: '#8e44ad' },
+  { nom: 'Sidi Alouane',   collecteur: 'Chaabane Lotfi',  agriculteurs: 9,  couleur: '#f39c12' },
+  { nom: 'Bou Merdes',     collecteur: 'Jbeli Kamel',     agriculteurs: 13, couleur: '#e74c3c' },
+];
+
+// Agrégation collecte par secteur
+const collecteParSecteur = SECTEURS.slice(0,4).map(s => {
+  const seancesMatin = MOCK.seances.filter(x => x.secteur === s.nom && x.date === '22/05/2026' && x.periode === 'Matin');
+  const seancesSoir  = MOCK.seances.filter(x => x.secteur === s.nom && x.date === '22/05/2026' && x.periode === 'Soir');
+  const qteMatin = seancesMatin.reduce((a,x)=>a+x.qte,0);
+  const qteSoir  = seancesSoir.reduce((a,x)=>a+x.qte,0);
+  const mntMatin = seancesMatin.reduce((a,x)=>a+x.montant,0);
+  const mntSoir  = seancesSoir.reduce((a,x)=>a+x.montant,0);
+  return { ...s, qteMatin, qteSoir, total: qteMatin+qteSoir, montant: mntMatin+mntSoir };
+});
+
+// ===== TAB SAISIE =====
+document.getElementById('tbl-saisie').innerHTML = `
+  <thead><tr>
+    <th>Secteur</th><th>Collecteur</th><th>N° Agri.</th>
+    <th>Quantité (L)</th><th>Perte (%)</th><th>Net livré</th><th>Bon réception</th>
+  </tr></thead>
+  <tbody>
+    ${SECTEURS.slice(0,4).map(c => {
+      const s = MOCK.seances.find(x => x.collecteur === c.collecteur && x.date === '22/05/2026' && x.periode === 'Soir') || {};
+      const qte = s.qte || 950;
+      return `<tr>
+        <td><span class="secteur-dot" style="background:${c.couleur}"></span><strong>${c.nom}</strong></td>
+        <td class="text-muted text-sm">${c.collecteur}</td>
+        <td class="text-center">${c.agriculteurs}</td>
+        <td><input class="form-control" type="number" value="${qte}" style="width:100px"></td>
+        <td><input class="form-control" type="number" value="0.8" step="0.1" style="width:70px"></td>
+        <td class="font-semi text-primary">${fmtInt(Math.round(qte*0.992))} L</td>
+        <td><button class="btn btn-xs btn-outline"><i class="ri-printer-line"></i>BR</button></td>
+      </tr>`;
+    }).join('')}
+  </tbody>`;
+
+// ===== TAB LISTE =====
+document.getElementById('tbl-seances-all').innerHTML = `
+  <thead><tr>
+    <th>Date</th><th>Secteur</th><th>Collecteur</th><th>Période</th>
+    <th>Quantité</th><th>Prix/L</th><th>Montant</th><th>Statut</th><th></th>
+  </tr></thead>
+  <tbody>
+    ${MOCK.seances.map(s => {
+      const sec = SECTEURS.find(x=>x.nom===s.secteur);
+      const col = sec ? sec.couleur : '#999';
+      return `<tr>
+        <td>${s.date}</td>
+        <td><span class="secteur-dot" style="background:${col}"></span>${s.secteur}</td>
+        <td class="font-semi">${s.collecteur}</td>
+        <td><span class="seance-chip ${s.periode==='Matin'?'seance-matin':'seance-soir'}">${s.periode}</span></td>
+        <td class="font-semi">${fmtInt(s.qte)} L</td>
+        <td class="text-muted">${s.prix.toFixed(3)}</td>
+        <td class="font-semi">${fmt(s.montant)}</td>
+        <td>${badgeStatut(s.statut)}</td>
+        <td><button class="btn btn-xs btn-light"><i class="ri-eye-line"></i></button></td>
+      </tr>`;
+    }).join('')}
+  </tbody>`;
+
+// ===== TAB SECTEURS =====
+document.getElementById('tbl-collecteurs').innerHTML = `
+  <thead><tr>
+    <th>Secteur</th><th>Collecteur responsable</th><th>Agriculteurs</th>
+    <th>Collecte mois (L)</th><th>Moy/agri/jour</th><th>Statut</th><th></th>
+  </tr></thead>
+  <tbody>
+    ${SECTEURS.map(c => `<tr>
+      <td><span class="secteur-dot" style="background:${c.couleur}"></span><strong>${c.nom}</strong></td>
+      <td class="font-semi">${c.collecteur}</td>
+      <td class="text-center">${c.agriculteurs}</td>
+      <td class="font-semi">${fmtInt(Math.floor(c.agriculteurs*3400))} L</td>
+      <td class="text-muted">${Math.round(c.agriculteurs*3400/22/c.agriculteurs)} L</td>
+      <td>${badgeStatut(c.nom==='Bou Merdes'?'congé':'actif')}</td>
+      <td><div class="flex gap-8">
+        <button class="btn btn-xs btn-light"><i class="ri-edit-line"></i></button>
+        <button class="btn btn-xs btn-outline">Agriculteurs</button>
+      </div></td>
+    </tr>`).join('')}
+  </tbody>`;
+
+// Agriculteurs par secteur
+const agriGrid = document.getElementById('agriculteurs-grid');
+const AGRI_PAR_SECTEUR = {
+  'Chorbane Nord': ['Ben Ali Ahmed','Khediri Fathi','Trabelsi Nizar','Hamdi Tarek','Ben Amor Slim','Chaabane Ali'],
+  'Chorbane Sud':  ['Ben Salah Mohamed','Jebali Khaled','Mnafekh Hichem','Zaier Riadh','Baccar Faouzi','Ben Youssef Hatem','Turki Amine'],
+  'Melloulèche':   ['Gharbi Said','Ben Ayed Omar','Riahi Walid','Ben Romdhane Taoufik','Aouadi Chokri'],
+  'Sidi Alouane':  ['Hamrouni Lotfi','Bouzaiene Rafik','Souissi Hédi','Brahem Amor'],
+};
+SECTEURS.slice(0,4).forEach(s => {
+  const agris = AGRI_PAR_SECTEUR[s.nom] || [];
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = `
+    <div class="card-header" style="padding:12px 16px;background:#f8fafc">
+      <h3 style="font-size:13px;display:flex;align-items:center;gap:6px">
+        <span class="secteur-dot" style="background:${s.couleur}"></span>
+        ${s.nom} — ${agris.length} agriculteurs
+      </h3>
+      <span class="text-muted text-xs">${s.collecteur}</span>
+    </div>
+    <div style="padding:12px 16px">
+      ${agris.map(a=>`
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+          <span>${a}</span>
+          <span class="text-muted text-xs">${Math.floor(Math.random()*60+80)} L/j moy.</span>
+        </div>`).join('')}
+      <div style="margin-top:8px;text-align:right">
+        <button class="btn btn-xs btn-outline"><i class="ri-add-line"></i>Ajouter</button>
+      </div>
+    </div>`;
+  agriGrid.appendChild(div);
+});
+
+// ===== TAB RAPPORTS — CHARTS =====
+function buildCharts() {
+  const labels = collecteParSecteur.map(s => s.nom.replace(' ', '\n'));
+  const colors = collecteParSecteur.map(s => s.couleur);
+
+  // Bar chart groupé matin/soir
+  new Chart(document.getElementById('chart-secteur'), {
+    type: 'bar',
+    data: {
+      labels: collecteParSecteur.map(s => s.nom),
+      datasets: [
+        {
+          label: 'Matin (L)',
+          data: collecteParSecteur.map(s => s.qteMatin),
+          backgroundColor: 'rgba(26,127,163,0.8)',
+          borderRadius: 4,
+        },
+        {
+          label: 'Soir (L)',
+          data: collecteParSecteur.map(s => s.qteSoir || 0),
+          backgroundColor: 'rgba(142,68,173,0.7)',
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 12 } } },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toLocaleString('fr-TN')} L` }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v, font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Pie chart
+  new Chart(document.getElementById('chart-pie'), {
+    type: 'doughnut',
+    data: {
+      labels: collecteParSecteur.map(s => s.nom),
+      datasets: [{
+        data: collecteParSecteur.map(s => s.total),
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw.toLocaleString('fr-TN')} L (${Math.round(ctx.raw/11527*100)}%)` }
+        }
+      },
+      cutout: '60%'
+    }
+  });
+
+  // Line chart évolution 7 jours
+  const jours = ['16/05','17/05','18/05','19/05','20/05','21/05','22/05'];
+  const totaux = [9820, 10240, 10510, 10880, 11100, 11250, 11527];
+  new Chart(document.getElementById('chart-evolution'), {
+    type: 'line',
+    data: {
+      labels: jours,
+      datasets: [{
+        label: 'Collecte totale (L)',
+        data: totaux,
+        borderColor: '#1a7fa3',
+        backgroundColor: 'rgba(26,127,163,0.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#1a7fa3',
+        pointRadius: 5,
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: 'Matin (L)',
+        data: [5200,5410,5580,5740,5890,5960,6027],
+        borderColor: '#f39c12',
+        borderWidth: 1.5,
+        borderDash: [4,3],
+        pointRadius: 3,
+        tension: 0.4,
+        fill: false,
+      },
+      {
+        label: 'Soir (L)',
+        data: [4620,4830,4930,5140,5210,5290,5500],
+        borderColor: '#8e44ad',
+        borderWidth: 1.5,
+        borderDash: [4,3],
+        pointRadius: 3,
+        tension: 0.4,
+        fill: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toLocaleString('fr-TN')} L` } }
+      },
+      scales: {
+        y: { beginAtZero: false, grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v, font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Tableau détaillé par secteur
+  const totalQte = collecteParSecteur.reduce((a,s)=>a+s.total,0);
+  document.getElementById('tbl-rapport-secteur').innerHTML = `
+    <thead><tr>
+      <th>Secteur</th><th>Collecteur</th><th>Agriculteurs</th>
+      <th>Séance Matin</th><th>Séance Soir</th>
+      <th>Total journalier</th><th>Montant</th><th>% du total</th>
+    </tr></thead>
+    <tbody>
+      ${collecteParSecteur.map(s => {
+        const pct = Math.round(s.total/totalQte*100);
+        return `<tr>
+          <td><span class="secteur-dot" style="background:${s.couleur}"></span><strong>${s.nom}</strong></td>
+          <td class="text-muted text-sm">${s.collecteur}</td>
+          <td class="text-center">${s.agriculteurs}</td>
+          <td>
+            ${s.qteMatin ? `<span class="seance-chip seance-matin">${fmtInt(s.qteMatin)} L</span>` : '<span class="text-muted">—</span>'}
+          </td>
+          <td>
+            ${s.qteSoir ? `<span class="seance-chip seance-soir">${fmtInt(s.qteSoir)} L</span>` : '<span class="badge badge-warning text-xs">en attente</span>'}
+          </td>
+          <td class="font-semi">${fmtInt(s.total)} L</td>
+          <td class="font-semi text-success">${fmt(s.montant)} TND</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="progress" style="width:60px"><div class="progress-bar" style="background:${s.couleur};width:${pct}%"></div></div>
+              <span class="text-sm font-semi">${pct}%</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+    <tfoot>
+      <tr style="background:#f8fafc;font-weight:700">
+        <td colspan="3" style="padding:10px 14px">TOTAL</td>
+        <td style="padding:10px 14px"><span class="seance-chip seance-matin">${fmtInt(collecteParSecteur.reduce((a,s)=>a+s.qteMatin,0))} L</span></td>
+        <td style="padding:10px 14px"><span class="seance-chip seance-soir">${fmtInt(collecteParSecteur.reduce((a,s)=>a+(s.qteSoir||0),0))} L</span></td>
+        <td style="padding:10px 14px" class="text-primary">${fmtInt(totalQte)} L</td>
+        <td style="padding:10px 14px" class="text-success">${fmt(collecteParSecteur.reduce((a,s)=>a+s.montant,0))} TND</td>
+        <td style="padding:10px 14px">100%</td>
+      </tr>
+    </tfoot>`;
+}
+
+// Initialiser charts quand l'onglet Rapports est cliqué
+document.querySelectorAll('.tab[data-target="tab-rapports"]').forEach(tab => {
+  tab.addEventListener('click', () => {
+    setTimeout(buildCharts, 50);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Agriculteurs — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .agri-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+    .agri-list-panel { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; position: sticky; top: 80px; }
+    .agri-list-header { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .agri-list-search { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; }
+    .agri-list-search:focus { outline: none; border-color: var(--primary-light); }
+    .agri-list-filter { width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; margin-top: 8px; }
+    .agri-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.12s; border-left: 3px solid transparent; }
+    .agri-item:hover { background: #f8fafc; }
+    .agri-item.active { background: var(--primary-xlight); border-left-color: var(--primary); }
+    .agri-item:last-child { border-bottom: none; }
+    .agri-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; flex-shrink: 0; }
+    .agri-item-name { font-size: 13px; font-weight: 600; }
+    .agri-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .agri-item-solde { margin-left: auto; text-align: right; }
+    .agri-item-solde .val { font-size: 12px; font-weight: 700; color: var(--accent); }
+    .agri-item-solde .lbl { font-size: 10px; color: var(--text-muted); }
+
+    .detail-panel { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .detail-empty { padding: 60px 24px; text-align: center; color: var(--text-muted); }
+    .detail-empty i { font-size: 48px; opacity: 0.2; display: block; margin-bottom: 12px; }
+
+    .agri-profile { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 20px 24px; color: white; display: flex; align-items: flex-start; gap: 16px; }
+    .agri-profile-avatar { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.4); }
+    .agri-profile-name { font-size: 19px; font-weight: 700; }
+    .agri-profile-sub { font-size: 12px; opacity: 0.8; margin-top: 3px; }
+    .agri-profile-badges { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .agri-profile-badge { padding: 4px 10px; background: rgba(255,255,255,0.15); border-radius: 20px; font-size: 11.5px; display: flex; align-items: center; gap: 5px; }
+
+    .compte-summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; border-bottom: 1px solid var(--border); }
+    .compte-item { padding: 14px 16px; border-right: 1px solid var(--border); text-align: center; }
+    .compte-item:last-child { border-right: none; }
+    .compte-item .val { font-size: 18px; font-weight: 700; }
+    .compte-item .lbl { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+    .service-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .service-row:last-child { border-bottom: none; }
+    .service-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .service-icon.vet { background: #dbeafe; color: #1d4ed8; }
+    .service-icon.vacc { background: #dcfce7; color: #15803d; }
+    .service-icon.insem { background: #f3e8ff; color: #7c3aed; }
+    .service-icon.trait { background: #fee2e2; color: #dc2626; }
+    .service-icon.analyse { background: #fef9c3; color: #a16207; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div id="header-container"></div>
+    <div class="page-body">
+
+      <!-- KPIs -->
+      <div class="kpi-grid mb-24" style="grid-template-columns:repeat(5,1fr)">
+        <div class="kpi-card blue">
+          <i class="ri-plant-fill kpi-icon"></i>
+          <div class="kpi-label">Total agriculteurs</div>
+          <div class="kpi-value">65 <span class="kpi-unit">adhérents</span></div>
+          <div class="kpi-sub">4 secteurs actifs</div>
+        </div>
+        <div class="kpi-card green">
+          <i class="ri-drop-fill kpi-icon"></i>
+          <div class="kpi-label">Collecte mois</div>
+          <div class="kpi-value">248 600 <span class="kpi-unit">L</span></div>
+          <div class="kpi-sub">3 823 L / agri en moy.</div>
+        </div>
+        <div class="kpi-card orange">
+          <i class="ri-shopping-basket-fill kpi-icon"></i>
+          <div class="kpi-label">Achats nutriments</div>
+          <div class="kpi-value">18 450 <span class="kpi-unit">TND</span></div>
+          <div class="kpi-sub">Mai 2026</div>
+        </div>
+        <div class="kpi-card purple">
+          <i class="ri-stethoscope-fill kpi-icon" style="font-size:24px"></i>
+          <div class="kpi-label">Services Zahra</div>
+          <div class="kpi-value">6 200 <span class="kpi-unit">TND</span></div>
+          <div class="kpi-sub">38 interventions</div>
+        </div>
+        <div class="kpi-card red">
+          <i class="ri-money-dollar-circle-fill kpi-icon"></i>
+          <div class="kpi-label">Avances en cours</div>
+          <div class="kpi-value">8 400 <span class="kpi-unit">TND</span></div>
+          <div class="kpi-sub">12 agriculteurs</div>
+        </div>
+      </div>
+
+      <!-- Split layout -->
+      <div class="agri-layout">
+
+        <!-- LEFT: Liste agriculteurs -->
+        <div class="agri-list-panel">
+          <div class="agri-list-header">
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px">
+              <i class="ri-plant-line text-primary"></i> &nbsp;Agriculteurs adhérents
+            </div>
+            <input class="agri-list-search" placeholder="&#128269; Rechercher un agriculteur..." oninput="filterAgri(this.value)">
+            <select class="agri-list-filter" onchange="filterBySecteur(this.value)" id="filter-secteur">
+              <option value="">Tous les secteurs</option>
+              <option>Chorbane Nord</option>
+              <option>Chorbane Sud</option>
+              <option>Melloulèche</option>
+              <option>Sidi Alouane</option>
+            </select>
+          </div>
+          <div id="agri-list" style="max-height:calc(100vh - 300px);overflow-y:auto"></div>
+          <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between">
+            <span id="agri-count">10 agriculteurs</span>
+            <button class="btn btn-xs btn-primary" onclick="openModal('modal-new-agri')"><i class="ri-add-line"></i>Ajouter</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Détail agriculteur -->
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-empty">
+            <i class="ri-plant-line"></i>
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px">Sélectionnez un agriculteur</div>
+            <div class="text-sm">Cliquez sur un agriculteur dans la liste pour voir son dossier complet</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal ajout agriculteur -->
+<div class="modal-overlay" id="modal-new-agri">
+  <div class="modal" style="width:560px">
+    <div class="modal-header">
+      <h3><i class="ri-plant-line text-primary"></i> &nbsp;Nouvel agriculteur adhérent</h3>
+      <button class="modal-close" onclick="closeModal('modal-new-agri')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Code agriculteur</label>
+          <input class="form-control" value="AGR-066" readonly style="background:#f8fafc;font-family:'Courier New';font-weight:700;color:var(--primary)"></div>
+        <div class="form-group"><label class="form-label">Nom & Prénom</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">CIN</label><input class="form-control" placeholder="8 chiffres"></div>
+        <div class="form-group"><label class="form-label">Téléphone</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Secteur</label>
+          <select class="form-control"><option>Chorbane Nord</option><option>Chorbane Sud</option><option>Melloulèche</option><option>Sidi Alouane</option></select></div>
+        <div class="form-group"><label class="form-label">Collecteur assigné</label>
+          <select class="form-control"><option>Khediri Moncef</option><option>Trabelsi Hassen</option><option>Ben Salem Ridha</option><option>Chaabane Lotfi</option></select></div>
+        <div class="form-group"><label class="form-label">Nombre de vaches laitières</label><input class="form-control" type="number" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Date d'adhésion</label><input class="form-control" type="date" value="2026-05-22"></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Adresse</label><input class="form-control" placeholder="Localité, délégation..."></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-new-agri')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-new-agri')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal avance -->
+<div class="modal-overlay" id="modal-avance">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Accorder une avance sur collecte</h3>
+      <button class="modal-close" onclick="closeModal('modal-avance')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-info mb-16"><i class="ri-information-line"></i>Le montant sera déduit progressivement des règlements mensuels.</div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Agriculteur</label>
+          <input class="form-control" id="avance-agri-name" readonly style="background:#f8fafc;font-weight:600"></div>
+        <div class="form-group"><label class="form-label">Montant (TND)</label><input class="form-control" type="number" step="0.001" placeholder="0.000"></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" value="2026-05-22"></div>
+        <div class="form-group"><label class="form-label">Mode versement</label>
+          <select class="form-control"><option>Espèces</option><option>Virement</option><option>Chèque</option></select></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Motif</label>
+          <input class="form-control" placeholder="Achat matériel, urgence..."></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-avance')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-avance')"><i class="ri-save-line"></i>Valider avance</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal service Zahra -->
+<div class="modal-overlay" id="modal-service">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouveau service Zahra</h3>
+      <button class="modal-close" onclick="closeModal('modal-service')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Type de service</label>
+          <select class="form-control">
+            <option>Consultation vétérinaire</option>
+            <option>Vaccination</option>
+            <option>Insémination artificielle</option>
+            <option>Traitement / Soin</option>
+            <option>Analyse lait</option>
+            <option>Conseil nutritionnel</option>
+            <option>Autre</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">Technicien / Vétérinaire</label>
+          <select class="form-control"><option>Dr. Saidi Mohamed</option><option>Dr. Ben Amor Karim</option><option>Technicien Zaidi</option></select></div>
+        <div class="form-group"><label class="form-label">Date intervention</label><input class="form-control" type="date" value="2026-05-22"></div>
+        <div class="form-group"><label class="form-label">Coût (TND)</label><input class="form-control" type="number" step="0.001"></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Détails / Remarques</label>
+          <input class="form-control" placeholder="Ex: Vache #3 — Mammite — Traitement antibiotique 5j"></div>
+        <div class="form-group"><label class="form-label">Mode règlement</label>
+          <select class="form-control"><option>Déduction collecte</option><option>Espèces</option></select></div>
+        <div class="form-group"><label class="form-label">Statut</label>
+          <select class="form-control"><option>Réglé</option><option>En attente régl.</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-service')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-service')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal achat nutriment -->
+<div class="modal-overlay" id="modal-achat-nutri">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Achat nutriment / intrant</h3>
+      <button class="modal-close" onclick="closeModal('modal-achat-nutri')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-info mb-12" style="font-size:12px"><i class="ri-information-line"></i>Le montant sera déduit du solde de l'agriculteur.</div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Produit</label>
+          <select class="form-control">
+            <option>Orge (PRD-001) — 0,850 TND/kg</option>
+            <option>Son de blé (PRD-002) — 0,450 TND/kg</option>
+            <option>Concentré vaches (PRD-003) — 1,200 TND/kg</option>
+            <option>Foin (PRD-004) — 4,500 TND/botte</option>
+            <option>Médicaments (PRD-005)</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">Quantité</label><input class="form-control" type="number"></div>
+        <div class="form-group"><label class="form-label">Prix unitaire (TND)</label><input class="form-control" type="number" step="0.001" value="0.850"></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" value="2026-05-22"></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Montant total</label>
+          <input class="form-control" readonly style="background:#f0fff4;font-weight:700;color:var(--accent)" placeholder="Calculé automatiquement"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-achat-nutri')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-achat-nutri')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal correction quantité collectée -->
+<div class="modal-overlay" id="modal-edit-collecte">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <h3><i class="ri-edit-line text-primary"></i> &nbsp;Corriger une quantité collectée</h3>
+      <button class="modal-close" onclick="closeModal('modal-edit-collecte')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-warning mb-16" style="font-size:12px">
+        <i class="ri-alert-line"></i> Toute modification sera tracée dans le journal d'audit.
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Agriculteur</label>
+          <input class="form-control" id="ec-agri-name" readonly style="background:#f8fafc;font-weight:600">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date séance</label>
+          <input class="form-control" id="ec-date" readonly style="background:#f8fafc">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Période</label>
+          <input class="form-control" id="ec-periode" readonly style="background:#f8fafc">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantité actuelle (L)</label>
+          <input class="form-control" id="ec-qte-actuelle" readonly style="background:#f8fafc;font-weight:700;color:var(--primary)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nouvelle quantité (L) <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" id="ec-qte-new" type="number" min="0" step="1" placeholder="Ex : 125"
+            oninput="calcEcart()">
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Écart constaté</label>
+          <div id="ec-ecart" style="padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-weight:700;font-size:14px;background:#f8fafc;color:var(--text-muted)">—</div>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Motif de correction <span style="color:var(--danger)">*</span></label>
+          <select class="form-control" id="ec-motif">
+            <option value="">— Sélectionner un motif —</option>
+            <option>Erreur de saisie</option>
+            <option>Quantité mesurée à corriger (compteur défaillant)</option>
+            <option>Retour lait refusé (qualité)</option>
+            <option>Ajout d'une livraison oubliée</option>
+            <option>Déduction fuite / perte</option>
+            <option>Correction suite réclamation agriculteur</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Commentaire libre</label>
+          <input class="form-control" id="ec-comment" placeholder="Précision optionnelle...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-edit-collecte')">Annuler</button>
+      <button class="btn btn-primary" onclick="validerCorrectionCollecte()">
+        <i class="ri-save-line"></i> Valider la correction
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = buildSidebar('agriculteurs');
+document.getElementById('header-container').innerHTML = buildHeader('Gestion des Agriculteurs');
+
+// ===== DONNÉES AGRICULTEURS =====
+const AGRI_LIST = [
+  {code:'AGR-042',nom:'Ben Ali Ahmed',    secteur:'Chorbane Nord', collecteur:'Khediri Moncef',  vaches:8,  solde:4256.30, avance:500,  adhesion:'15/03/2018', tel:'25 xxx xxx', statut:'actif'},
+  {code:'AGR-015',nom:'Khediri Fathi',    secteur:'Chorbane Nord', collecteur:'Khediri Moncef',  vaches:12, solde:6820.50, avance:0,    adhesion:'20/05/2016', tel:'94 xxx xxx', statut:'actif'},
+  {code:'AGR-023',nom:'Trabelsi Nizar',   secteur:'Chorbane Nord', collecteur:'Khediri Moncef',  vaches:6,  solde:2140.80, avance:200,  adhesion:'08/11/2019', tel:'22 xxx xxx', statut:'actif'},
+  {code:'AGR-031',nom:'Hamdi Tarek',      secteur:'Chorbane Nord', collecteur:'Khediri Moncef',  vaches:9,  solde:3480.20, avance:0,    adhesion:'02/04/2017', tel:'52 xxx xxx', statut:'actif'},
+  {code:'AGR-011',nom:'Ben Salah Mohamed',secteur:'Chorbane Sud',  collecteur:'Trabelsi Hassen', vaches:11, solde:5380.20, avance:300,  adhesion:'12/01/2017', tel:'20 xxx xxx', statut:'actif'},
+  {code:'AGR-007',nom:'Jebali Khaled',    secteur:'Chorbane Sud',  collecteur:'Trabelsi Hassen', vaches:8,  solde:3920.60, avance:0,    adhesion:'03/07/2018', tel:'29 xxx xxx', statut:'actif'},
+  {code:'AGR-019',nom:'Mnafekh Hichem',   secteur:'Chorbane Sud',  collecteur:'Trabelsi Hassen', vaches:14, solde:7240.80, avance:1000, adhesion:'25/09/2015', tel:'96 xxx xxx', statut:'actif'},
+  {code:'AGR-033',nom:'Gharbi Said',      secteur:'Melloulèche',   collecteur:'Ben Salem Ridha', vaches:7,  solde:3120.40, avance:0,    adhesion:'18/02/2020', tel:'55 xxx xxx', statut:'actif'},
+  {code:'AGR-028',nom:'Ben Ayed Omar',    secteur:'Melloulèche',   collecteur:'Ben Salem Ridha', vaches:9,  solde:4580.90, avance:500,  adhesion:'05/06/2017', tel:'28 xxx xxx', statut:'actif'},
+  {code:'AGR-051',nom:'Hamrouni Lotfi',   secteur:'Sidi Alouane',  collecteur:'Chaabane Lotfi',  vaches:5,  solde:1980.30, avance:0,    adhesion:'14/10/2021', tel:'52 xxx xxx', statut:'actif'},
+  {code:'AGR-038',nom:'Bouzaiene Rafik',  secteur:'Sidi Alouane',  collecteur:'Chaabane Lotfi',  vaches:10, solde:0,       avance:200,  adhesion:'30/03/2019', tel:'24 xxx xxx', statut:'suspendu'},
+];
+
+const SECTEUR_COLORS = {
+  'Chorbane Nord':'#1a7fa3','Chorbane Sud':'#27ae60',
+  'Melloulèche':'#8e44ad','Sidi Alouane':'#f39c12'
+};
+
+// ACHATS NUTRIMENTS par agriculteur
+const ACHATS_NUTRI = {
+  'AGR-042':[
+    {date:'22/05/2026',produit:'Orge',         ref:'PRD-001',qte:200, pu:0.850, total:170.000},
+    {date:'15/05/2026',produit:'Concentré',    ref:'PRD-003',qte:50,  pu:1.200, total:60.000},
+    {date:'08/05/2026',produit:'Son de blé',   ref:'PRD-002',qte:100, pu:0.450, total:45.000},
+    {date:'01/05/2026',produit:'Orge',         ref:'PRD-001',qte:300, pu:0.850, total:255.000},
+  ],
+  'AGR-015':[
+    {date:'20/05/2026',produit:'Concentré',    ref:'PRD-003',qte:100, pu:1.200, total:120.000},
+    {date:'10/05/2026',produit:'Orge',         ref:'PRD-001',qte:500, pu:0.850, total:425.000},
+    {date:'02/05/2026',produit:'Foin',         ref:'PRD-004',qte:20,  pu:4.500, total:90.000},
+  ],
+  'AGR-019':[
+    {date:'21/05/2026',produit:'Orge',         ref:'PRD-001',qte:600, pu:0.850, total:510.000},
+    {date:'14/05/2026',produit:'Concentré',    ref:'PRD-003',qte:120, pu:1.200, total:144.000},
+    {date:'07/05/2026',produit:'Son de blé',   ref:'PRD-002',qte:200, pu:0.450, total:90.000},
+    {date:'01/05/2026',produit:'Médicaments',  ref:'PRD-005',qte:3,   pu:15.000,total:45.000},
+  ],
+};
+
+// SERVICES ZAHRA par agriculteur
+const SERVICES = {
+  'AGR-042':[
+    {date:'20/05/2026',type:'Consultation vétérinaire', detail:'Examen vache #3 — suspect mammite', tech:'Dr. Saidi Mohamed',  cout:35.000, statut:'réglé',  icon:'vet'},
+    {date:'12/05/2026',type:'Vaccination',              detail:'Fièvre aphteuse — 8 vaches',        tech:'Dr. Saidi Mohamed',  cout:96.000, statut:'réglé',  icon:'vacc'},
+    {date:'05/05/2026',type:'Insémination artificielle',detail:'Vache #5 — semence importée',       tech:'Dr. Ben Amor Karim', cout:55.000, statut:'réglé',  icon:'insem'},
+    {date:'28/04/2026',type:'Traitement',               detail:'Mammite vache #2 — antibiotique 5j',tech:'Dr. Saidi Mohamed',  cout:85.000, statut:'réglé',  icon:'trait'},
+    {date:'15/04/2026',type:'Analyse lait',             detail:'Contrôle qualité bactériologique',  tech:'Technicien Zaidi',   cout:25.000, statut:'réglé',  icon:'analyse'},
+  ],
+  'AGR-015':[
+    {date:'18/05/2026',type:'Vaccination',              detail:'Brucellose — 12 vaches',            tech:'Dr. Saidi Mohamed',  cout:144.000,statut:'réglé',  icon:'vacc'},
+    {date:'08/05/2026',type:'Insémination artificielle',detail:'Vache #8 et #11',                   tech:'Dr. Ben Amor Karim', cout:110.000,statut:'réglé',  icon:'insem'},
+    {date:'02/05/2026',type:'Analyse lait',             detail:'Contrôle mensuel',                  tech:'Technicien Zaidi',   cout:25.000, statut:'réglé',  icon:'analyse'},
+  ],
+  'AGR-019':[
+    {date:'21/05/2026',type:'Consultation vétérinaire', detail:'Vache #7 — problème de fièvre',     tech:'Dr. Ben Amor Karim', cout:35.000, statut:'en attente régl.', icon:'vet'},
+    {date:'15/05/2026',type:'Traitement',               detail:'Métrite — vache #3',                tech:'Dr. Saidi Mohamed',  cout:120.000,statut:'réglé',  icon:'trait'},
+    {date:'05/05/2026',type:'Vaccination',              detail:'FMD + Brucellose — 14 vaches',      tech:'Dr. Saidi Mohamed',  cout:168.000,statut:'réglé',  icon:'vacc'},
+    {date:'01/05/2026',type:'Conseil nutritionnel',     detail:'Plan alimentation vaches haute prod.',tech:'Technicien Zaidi', cout:20.000, statut:'réglé',  icon:'analyse'},
+  ],
+};
+
+// COLLECTE par agriculteur (livraisons)
+const COLLECTE_AGRI = {
+  'AGR-042': MOCK.agriculteur.livraisons,
+  'AGR-015': [
+    {date:'22/05/2026',periode:'Matin',qte:168,prix:1.35,montant:226.800},
+    {date:'22/05/2026',periode:'Soir', qte:158,prix:1.35,montant:213.300},
+    {date:'21/05/2026',periode:'Matin',qte:172,prix:1.35,montant:232.200},
+    {date:'21/05/2026',periode:'Soir', qte:161,prix:1.35,montant:217.350},
+    {date:'20/05/2026',periode:'Matin',qte:175,prix:1.35,montant:236.250},
+    {date:'20/05/2026',periode:'Soir', qte:164,prix:1.35,montant:221.400},
+  ],
+  'AGR-019': [
+    {date:'22/05/2026',periode:'Matin',qte:195,prix:1.35,montant:263.250},
+    {date:'22/05/2026',periode:'Soir', qte:182,prix:1.35,montant:245.700},
+    {date:'21/05/2026',periode:'Matin',qte:198,prix:1.35,montant:267.300},
+    {date:'21/05/2026',periode:'Soir', qte:185,prix:1.35,montant:249.750},
+    {date:'20/05/2026',periode:'Matin',qte:190,prix:1.35,montant:256.500},
+  ],
+};
+
+// ===== RENDER LIST =====
+let allAgri = [...AGRI_LIST];
+
+function renderList(list) {
+  const container = document.getElementById('agri-list');
+  document.getElementById('agri-count').textContent = `${list.length} agriculteur${list.length>1?'s':''}`;
+  container.innerHTML = list.map(a => {
+    const col = SECTEUR_COLORS[a.secteur] || '#888';
+    const initials = a.nom.split(' ').map(n=>n[0]).join('').slice(0,2);
+    return `<div class="agri-item" data-code="${a.code}" onclick="selectAgri('${a.code}')">
+      <div class="agri-avatar" style="background:${col}">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div class="agri-item-name">${a.nom}</div>
+        <div class="agri-item-sub">
+          <span style="color:${col}">●</span> ${a.secteur} · ${a.vaches} vaches
+        </div>
+      </div>
+      <div class="agri-item-solde">
+        <div class="val">${a.solde.toFixed(0)} TND</div>
+        <div class="lbl">${a.statut === 'suspendu' ? '<span style="color:var(--danger)">suspendu</span>' : 'solde'}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Aucun résultat</div>';
+}
+renderList(allAgri);
+
+function filterAgri(q) {
+  const secteur = document.getElementById('filter-secteur').value;
+  let list = AGRI_LIST.filter(a =>
+    a.nom.toLowerCase().includes(q.toLowerCase()) || a.code.toLowerCase().includes(q.toLowerCase())
+  );
+  if (secteur) list = list.filter(a => a.secteur === secteur);
+  renderList(list);
+}
+function filterBySecteur(s) {
+  const q = document.querySelector('.agri-list-search').value;
+  let list = AGRI_LIST.filter(a => a.nom.toLowerCase().includes(q.toLowerCase()) || a.code.toLowerCase().includes(q.toLowerCase()));
+  if (s) list = list.filter(a => a.secteur === s);
+  renderList(list);
+}
+
+// ===== SELECT AGRICULTEUR =====
+function selectAgri(code) {
+  document.querySelectorAll('.agri-item').forEach(el => el.classList.toggle('active', el.dataset.code === code));
+  const a = AGRI_LIST.find(x => x.code === code);
+  if (!a) return;
+
+  const col = SECTEUR_COLORS[a.secteur] || '#888';
+  const initials = a.nom.split(' ').map(n=>n[0]).join('').slice(0,2);
+
+  const livraisons = COLLECTE_AGRI[code] || MOCK.agriculteur.livraisons.slice(0,4);
+  const achats     = ACHATS_NUTRI[code]  || [];
+  const services   = SERVICES[code]      || [];
+
+  const totalCollecteMois = livraisons.reduce((s,l) => s+l.montant, 0) * 4;
+  const totalAchats       = achats.reduce((s,x) => s+x.total, 0);
+  const totalServices     = services.reduce((s,x) => s+x.cout, 0);
+
+  const serviceIcons = {vet:'ri-stethoscope-line',vacc:'ri-syringe-line',insem:'ri-hearts-line',trait:'ri-medicine-bottle-line',analyse:'ri-test-tube-line'};
+
+  document.getElementById('detail-panel').innerHTML = `
+    <!-- Profile header -->
+    <div class="agri-profile">
+      <div class="agri-profile-avatar">${initials}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="agri-profile-name">${a.nom}</div>
+          ${a.statut==='suspendu'?'<span style="background:var(--danger);color:white;font-size:10px;padding:2px 8px;border-radius:10px">SUSPENDU</span>':''}
+        </div>
+        <div class="agri-profile-sub">${a.code} &nbsp;·&nbsp; Adhérent depuis le ${a.adhesion}</div>
+        <div class="agri-profile-badges">
+          <span class="agri-profile-badge"><i class="ri-map-pin-line"></i>${a.secteur}</span>
+          <span class="agri-profile-badge"><i class="ri-user-line"></i>${a.collecteur}</span>
+          <span class="agri-profile-badge"><i class="ri-phone-line"></i>${a.tel}</span>
+          <span class="agri-profile-badge"><i class="ri-heart-line"></i>${a.vaches} vaches laitières</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)"
+          onclick="document.getElementById('avance-agri-name').value='${a.nom}';openModal('modal-avance')">
+          <i class="ri-bank-card-line"></i>Avance
+        </button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)"
+          onclick="openModal('modal-service')">
+          <i class="ri-stethoscope-line"></i>Service
+        </button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)"
+          onclick="openModal('modal-achat-nutri')">
+          <i class="ri-shopping-basket-line"></i>Achat
+        </button>
+      </div>
+    </div>
+
+    <!-- Compte résumé -->
+    <div class="compte-summary">
+      <div class="compte-item">
+        <div class="val text-success">${a.solde.toFixed(3)}</div>
+        <div class="lbl">Solde net TND</div>
+      </div>
+      <div class="compte-item">
+        <div class="val text-primary">${totalCollecteMois.toFixed(0)}</div>
+        <div class="lbl">Collecte mois TND</div>
+      </div>
+      <div class="compte-item">
+        <div class="val text-warning">${totalAchats.toFixed(3)}</div>
+        <div class="lbl">Achats nutriments</div>
+      </div>
+      <div class="compte-item">
+        <div class="val ${a.avance>0?'text-danger':'text-muted'}">${a.avance.toFixed(3)}</div>
+        <div class="lbl">Avance en cours</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="padding:0 20px;border-bottom:2px solid var(--border)">
+      <div class="tabs" data-group="det" style="border:none;margin:0">
+        <div class="tab active" data-group="det" data-target="det-collecte"><i class="ri-drop-line"></i>Collecte de lait</div>
+        <div class="tab" data-group="det" data-target="det-nutri"><i class="ri-shopping-basket-line"></i>Achats nutriments</div>
+        <div class="tab" data-group="det" data-target="det-services"><i class="ri-stethoscope-line"></i>Services Zahra</div>
+        <div class="tab" data-group="det" data-target="det-compte"><i class="ri-wallet-3-line"></i>Compte global</div>
+      </div>
+    </div>
+
+    <!-- TAB COLLECTE -->
+    <div id="det-collecte" class="tab-content active" data-group="det">
+      <div style="padding:16px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h4 style="font-size:14px;font-weight:600">Livraisons — Mai 2026</h4>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-xs btn-light"><i class="ri-download-line"></i>Relevé PDF</button>
+            <button class="btn btn-xs btn-outline">Extrait de compte</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+          <div style="background:#f0f8ff;border:1px solid #bae0fd;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:var(--primary)">${fmtInt(livraisons.reduce((s,l)=>s+l.qte,0))} L</div>
+            <div style="font-size:10px;color:var(--text-muted)">Total livré</div>
+          </div>
+          <div style="background:#f0fff4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:var(--accent)">${livraisons.reduce((s,l)=>s+l.montant,0).toFixed(3)} TND</div>
+            <div style="font-size:10px;color:var(--text-muted)">Montant brut</div>
+          </div>
+          <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#a16207">1,350 TND</div>
+            <div style="font-size:10px;color:var(--text-muted)">Prix/L actuel</div>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Date</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Période</th>
+            <th style="padding:8px 12px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Quantité</th>
+            <th style="padding:8px 12px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Montant</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Action</th>
+          </tr></thead>
+          <tbody>
+            ${livraisons.map(l=>`<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 12px">${l.date}</td>
+              <td style="padding:9px 12px"><span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:${l.periode==='Matin'?'#fef9c3':'#ede9fe'};color:${l.periode==='Matin'?'#a16207':'#6d28d9'}">${l.periode}</span></td>
+              <td style="padding:9px 12px;text-align:right;font-weight:600">${l.qte} L</td>
+              <td style="padding:9px 12px;text-align:right;font-weight:600;color:var(--accent)">${l.montant.toFixed(3)} TND</td>
+              <td style="padding:9px 12px;text-align:center"><button class="btn btn-xs btn-light" onclick="editCollecte('${a.nom}','${a.code}','${l.date}','${l.periode}',${l.qte},${l.prix})" title="Modifier la quantité"><i class="ri-edit-line"></i></button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB NUTRIMENTS -->
+    <div id="det-nutri" class="tab-content" data-group="det">
+      <div style="padding:16px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h4 style="font-size:14px;font-weight:600">Achats nutriments & intrants — Mai 2026</h4>
+          <button class="btn btn-sm btn-primary" onclick="openModal('modal-achat-nutri')"><i class="ri-add-line"></i>Nouvel achat</button>
+        </div>
+        ${achats.length === 0
+          ? `<div style="text-align:center;padding:30px;color:var(--text-muted)"><i class="ri-shopping-basket-line" style="font-size:32px;opacity:0.3;display:block;margin-bottom:8px"></i>Aucun achat ce mois</div>`
+          : `<table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead><tr>
+                ${['Date','Produit','Réf.','Quantité','P.U.','Total',''].map(h=>`<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">${h}</th>`).join('')}
+              </tr></thead>
+              <tbody>
+                ${achats.map(x=>`<tr style="border-bottom:1px solid var(--border)">
+                  <td style="padding:9px 12px">${x.date}</td>
+                  <td style="padding:9px 12px;font-weight:600">${x.produit}</td>
+                  <td style="padding:9px 12px"><span style="font-family:'Courier New';font-size:11px;background:#f1f5f9;border:1px solid #cbd5e1;padding:2px 6px;border-radius:4px;color:var(--primary)">${x.ref}</span></td>
+                  <td style="padding:9px 12px">${fmtInt(x.qte)} kg</td>
+                  <td style="padding:9px 12px;color:var(--text-muted)">${x.pu.toFixed(3)}</td>
+                  <td style="padding:9px 12px;font-weight:700;color:var(--warning)">${x.total.toFixed(3)} TND</td>
+                  <td style="padding:9px 12px"><button class="btn btn-xs btn-light"><i class="ri-printer-line"></i></button></td>
+                </tr>`).join('')}
+              </tbody>
+              <tfoot>
+                <tr style="background:#f8fafc;font-weight:700">
+                  <td colspan="5" style="padding:10px 12px">Total achats nutriments</td>
+                  <td style="padding:10px 12px;color:var(--warning)">${totalAchats.toFixed(3)} TND</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>`}
+      </div>
+    </div>
+
+    <!-- TAB SERVICES ZAHRA -->
+    <div id="det-services" class="tab-content" data-group="det">
+      <div style="padding:16px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h4 style="font-size:14px;font-weight:600"><i class="ri-stethoscope-line" style="color:var(--primary)"></i> &nbsp;Services Zahra — interventions</h4>
+          <button class="btn btn-sm btn-primary" onclick="openModal('modal-service')"><i class="ri-add-line"></i>Nouveau service</button>
+        </div>
+        ${services.length === 0
+          ? `<div style="text-align:center;padding:30px;color:var(--text-muted)">Aucun service enregistré</div>`
+          : services.map(s=>`
+            <div class="service-row">
+              <div class="service-icon ${s.icon}"><i class="${serviceIcons[s.icon]||'ri-service-line'}"></i></div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600">${s.type}</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${s.detail}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
+                  <i class="ri-user-line"></i> ${s.tech} &nbsp;·&nbsp; <i class="ri-calendar-line"></i> ${s.date}
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:14px;font-weight:700;color:var(--danger)">${s.cout.toFixed(3)} TND</div>
+                <div style="margin-top:4px">${badgeStatut(s.statut)}</div>
+              </div>
+            </div>`).join('')}
+        ${services.length > 0 ? `
+          <div style="margin-top:12px;padding:12px 0;border-top:2px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;font-weight:600">Total services Zahra</span>
+            <span style="font-size:16px;font-weight:700;color:var(--danger)">${totalServices.toFixed(3)} TND</span>
+          </div>` : ''}
+      </div>
+    </div>
+
+    <!-- TAB COMPTE GLOBAL -->
+    <div id="det-compte" class="tab-content" data-group="det">
+      <div style="padding:16px 20px">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:14px">Compte global — Mai 2026</h4>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+          <thead><tr>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Libellé</th>
+            <th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Débit</th>
+            <th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border);background:#f8fafc">Crédit</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);background:#f0fff4">
+              <td style="padding:10px 14px;font-weight:600"><i class="ri-drop-line" style="color:var(--primary)"></i> Collecte de lait — Mai 2026</td>
+              <td style="padding:10px 14px;text-align:right"></td>
+              <td style="padding:10px 14px;text-align:right;font-weight:700;color:var(--accent)">${(totalCollecteMois).toFixed(3)} TND</td>
+            </tr>
+            ${achats.length>0?`<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px"><i class="ri-shopping-basket-line" style="color:var(--warning)"></i> Achats nutriments</td>
+              <td style="padding:10px 14px;text-align:right;color:var(--danger)">−${totalAchats.toFixed(3)} TND</td>
+              <td style="padding:10px 14px;text-align:right"></td>
+            </tr>`:''}
+            ${services.length>0?`<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px"><i class="ri-stethoscope-line" style="color:var(--purple)"></i> Services Zahra (vétérinaire, insémination...)</td>
+              <td style="padding:10px 14px;text-align:right;color:var(--danger)">−${totalServices.toFixed(3)} TND</td>
+              <td style="padding:10px 14px;text-align:right"></td>
+            </tr>`:''}
+            ${a.avance>0?`<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px"><i class="ri-bank-card-line" style="color:var(--info)"></i> Avance accordée</td>
+              <td style="padding:10px 14px;text-align:right;color:var(--danger)">−${a.avance.toFixed(3)} TND</td>
+              <td style="padding:10px 14px;text-align:right"></td>
+            </tr>`:''}
+          </tbody>
+          <tfoot>
+            <tr style="background:${a.solde>=0?'#f0fff4':'#fff5f5'};font-weight:700;font-size:14px">
+              <td style="padding:12px 14px">SOLDE NET À RÉGLER</td>
+              <td style="padding:12px 14px;text-align:right"></td>
+              <td style="padding:12px 14px;text-align:right;color:${a.solde>=0?'var(--accent)':'var(--danger)'}">
+                ${a.solde.toFixed(3)} TND
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline"><i class="ri-download-line"></i>Extrait de compte PDF</button>
+          <button class="btn btn-primary" onclick="document.getElementById('avance-agri-name').value='${a.nom}';openModal('modal-avance')">
+            <i class="ri-bank-card-line"></i>Accorder une avance
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  initTabs();
+  document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===== CORRECTION COLLECTE =====
+window.editCollecte = function(nomAgri, codeAgri, date, periode, qteActuelle, prix) {
+  document.getElementById('ec-agri-name').value = `${nomAgri} (${codeAgri})`;
+  document.getElementById('ec-date').value = date;
+  document.getElementById('ec-periode').value = periode;
+  document.getElementById('ec-qte-actuelle').value = `${qteActuelle} L`;
+  document.getElementById('ec-qte-new').value = '';
+  document.getElementById('ec-motif').value = '';
+  document.getElementById('ec-comment').value = '';
+  document.getElementById('ec-ecart').textContent = '—';
+  document.getElementById('ec-ecart').style.color = 'var(--text-muted)';
+  document.getElementById('ec-ecart').dataset.prix = prix;
+  document.getElementById('ec-ecart').dataset.qteActuelle = qteActuelle;
+  openModal('modal-edit-collecte');
+};
+
+window.calcEcart = function() {
+  const el = document.getElementById('ec-ecart');
+  const qteActuelle = parseFloat(el.dataset.qteActuelle) || 0;
+  const prix = parseFloat(el.dataset.prix) || 1.35;
+  const qteNew = parseFloat(document.getElementById('ec-qte-new').value);
+  if (isNaN(qteNew)) { el.textContent = '—'; el.style.color = 'var(--text-muted)'; return; }
+  const ecart = qteNew - qteActuelle;
+  const delta = (ecart * prix).toFixed(3);
+  const sign = ecart >= 0 ? '+' : '';
+  el.textContent = `${sign}${ecart} L  (${sign}${delta} TND)`;
+  el.style.color = ecart === 0 ? 'var(--text-muted)' : ecart > 0 ? 'var(--accent)' : 'var(--danger)';
+};
+
+window.validerCorrectionCollecte = function() {
+  const qteNew = document.getElementById('ec-qte-new').value;
+  const motif = document.getElementById('ec-motif').value;
+  if (!qteNew || parseFloat(qteNew) < 0) {
+    alert('Veuillez saisir une quantité valide.');
+    return;
+  }
+  if (!motif) {
+    alert('Veuillez sélectionner un motif de correction.');
+    return;
+  }
+  closeModal('modal-edit-collecte');
+  const agri = document.getElementById('ec-agri-name').value;
+  const date = document.getElementById('ec-date').value;
+  const periode = document.getElementById('ec-periode').value;
+  const qteActuelle = document.getElementById('ec-qte-actuelle').value;
+  // Simulate success feedback
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
+  toast.innerHTML = `<i class="ri-check-line"></i> Correction enregistrée — ${date} ${periode} : ${qteActuelle} → ${qteNew} L`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+};
+</script>
+</body>
+</html>

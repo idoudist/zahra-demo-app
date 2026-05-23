@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <div id="header-container"></div>
+
+    <div class="page-body">
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <i class="ri-drop-fill kpi-icon"></i>
+          <div class="kpi-label">Collecte aujourd'hui</div>
+          <div class="kpi-value">11 527 <span class="kpi-unit">L</span></div>
+          <div class="kpi-sub"><span class="kpi-up"><i class="ri-arrow-up-line"></i>+3.4%</span> vs hier</div>
+        </div>
+        <div class="kpi-card green">
+          <i class="ri-money-dollar-circle-fill kpi-icon"></i>
+          <div class="kpi-label">CA du mois</div>
+          <div class="kpi-value">312 500 <span class="kpi-unit">TND</span></div>
+          <div class="kpi-sub"><span class="kpi-up"><i class="ri-arrow-up-line"></i>+7.1%</span> vs mai 2025</div>
+        </div>
+        <div class="kpi-card orange">
+          <i class="ri-archive-fill kpi-icon"></i>
+          <div class="kpi-label">Alertes stock</div>
+          <div class="kpi-value" style="color:var(--warning)">2 <span class="kpi-unit">articles</span></div>
+          <div class="kpi-sub">Bidons 10L &amp; Médicaments</div>
+        </div>
+        <div class="kpi-card purple">
+          <i class="ri-team-fill kpi-icon"></i>
+          <div class="kpi-label">Employés actifs</div>
+          <div class="kpi-value">9 <span class="kpi-unit">/ 10</span></div>
+          <div class="kpi-sub">1 en congé — Jbeli Kamel</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-24">
+        <!-- Collecte du jour -->
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="ri-drop-line text-primary"></i> &nbsp;Séances du jour — 22/05/2026</h3>
+            <a href="collecte.html" class="btn btn-sm btn-outline">Voir tout</a>
+          </div>
+          <div class="table-wrapper">
+            <table id="tbl-seances"></table>
+          </div>
+        </div>
+
+        <!-- Dernières factures -->
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="ri-file-list-3-line text-primary"></i> &nbsp;Dernières factures</h3>
+            <a href="ventes.html" class="btn btn-sm btn-outline">Voir tout</a>
+          </div>
+          <div class="table-wrapper">
+            <table id="tbl-factures"></table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Stocks en alerte -->
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="ri-alert-line text-warning"></i> &nbsp;Stocks en alerte</h3>
+            <a href="stocks.html" class="btn btn-sm btn-outline">Gérer</a>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-warning mb-12">
+              <i class="ri-alert-line"></i>
+              <div><strong>Bidons 10L</strong> — Stock actuel : 8 unités (min : 50). Commander de toute urgence.</div>
+            </div>
+            <div class="alert alert-warning">
+              <i class="ri-alert-line"></i>
+              <div><strong>Médicaments</strong> — Stock actuel : 45 unités (min : 20). Proche du seuil.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modules raccourcis -->
+        <div class="card">
+          <div class="card-header"><h3><i class="ri-apps-line text-primary"></i> &nbsp;Accès rapide</h3></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <a href="collecte.html" style="display:flex;flex-direction:column;align-items:center;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);gap:8px;transition:all 0.15s;" onmouseover="this.style.background='var(--primary-xlight)'" onmouseout="this.style.background=''">
+                <i class="ri-drop-line" style="font-size:28px;color:var(--primary-light)"></i>
+                <span style="font-size:12px;font-weight:600;text-align:center;">Saisie collecte</span>
+              </a>
+              <a href="ventes.html" style="display:flex;flex-direction:column;align-items:center;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);gap:8px;transition:all 0.15s;" onmouseover="this.style.background='var(--primary-xlight)'" onmouseout="this.style.background=''">
+                <i class="ri-file-list-3-line" style="font-size:28px;color:var(--accent)"></i>
+                <span style="font-size:12px;font-weight:600;text-align:center;">Nouvelle facture</span>
+              </a>
+              <a href="stocks.html" style="display:flex;flex-direction:column;align-items:center;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);gap:8px;transition:all 0.15s;" onmouseover="this.style.background='var(--primary-xlight)'" onmouseout="this.style.background=''">
+                <i class="ri-archive-line" style="font-size:28px;color:var(--warning)"></i>
+                <span style="font-size:12px;font-weight:600;text-align:center;">Mouvement stock</span>
+              </a>
+              <a href="comptabilite.html" style="display:flex;flex-direction:column;align-items:center;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);gap:8px;transition:all 0.15s;" onmouseover="this.style.background='var(--primary-xlight)'" onmouseout="this.style.background=''">
+                <i class="ri-bank-line" style="font-size:28px;color:var(--purple)"></i>
+                <span style="font-size:12px;font-weight:600;text-align:center;">Journal comptable</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById('sidebar-container').innerHTML = buildSidebar('dashboard');
+  document.getElementById('header-container').innerHTML = buildHeader('Tableau de bord', { name: 'Admin Système', initials: 'AS' });
+
+  // Séances table
+  const seancesAujourd = MOCK.seances.filter(s => s.date === '22/05/2026');
+  document.getElementById('tbl-seances').innerHTML = `
+    <thead><tr>
+      <th>Collecteur</th><th>Période</th><th>Qtité (L)</th><th>Montant</th><th>Statut</th>
+    </tr></thead>
+    <tbody>
+      ${seancesAujourd.map(s => `<tr>
+        <td><div style="font-weight:500">${s.collecteur.split(' ')[0]}</div><div class="text-muted text-xs">${s.secteur}</div></td>
+        <td><span class="chip">${s.periode}</span></td>
+        <td class="font-semi">${fmtInt(s.qte)}</td>
+        <td class="font-semi">${fmt(s.montant)} TND</td>
+        <td>${badgeStatut(s.statut)}</td>
+      </tr>`).join('')}
+    </tbody>`;
+
+  // Factures table
+  document.getElementById('tbl-factures').innerHTML = `
+    <thead><tr>
+      <th>Réf</th><th>Client</th><th>Date</th><th>Montant</th><th>Statut</th>
+    </tr></thead>
+    <tbody>
+      ${MOCK.factures.slice(0,5).map(f => `<tr>
+        <td class="text-primary font-semi">${f.ref}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client}</td>
+        <td class="text-muted text-sm">${f.date}</td>
+        <td class="font-semi">${fmtInt(f.montant)} TND</td>
+        <td>${badgeStatut(f.statut)}</td>
+      </tr>`).join('')}
+    </tbody>`;
+</script>
+</body>
+</html>

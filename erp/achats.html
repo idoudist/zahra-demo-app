@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achats & Fournisseurs — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div id="header-container"></div>
+    <div class="page-body">
+
+      <div class="kpi-grid mb-24" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card blue"><i class="ri-shopping-cart-fill kpi-icon"></i><div class="kpi-label">Achats du mois</div><div class="kpi-value">28 480 <span class="kpi-unit">TND</span></div><div class="kpi-sub">5 bons de commande</div></div>
+        <div class="kpi-card orange"><i class="ri-time-fill kpi-icon"></i><div class="kpi-label">Factures en attente</div><div class="kpi-value">2 <span class="kpi-unit">en cours</span></div><div class="kpi-sub">4 800 TND à régler</div></div>
+        <div class="kpi-card green"><i class="ri-truck-fill kpi-icon"></i><div class="kpi-label">Réceptions</div><div class="kpi-value">3 <span class="kpi-unit">ce mois</span></div><div class="kpi-sub">Toutes conformes</div></div>
+        <div class="kpi-card purple"><i class="ri-store-2-fill kpi-icon"></i><div class="kpi-label">Fournisseurs actifs</div><div class="kpi-value">5</div><div class="kpi-sub">Tous référencés</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding-bottom:0">
+          <div class="tabs" data-group="ach">
+            <div class="tab active" data-group="ach" data-target="tab-bc"><i class="ri-file-list-line"></i>Bons de commande</div>
+            <div class="tab" data-group="ach" data-target="tab-fourn"><i class="ri-store-2-line"></i>Fournisseurs</div>
+            <div class="tab" data-group="ach" data-target="tab-recept"><i class="ri-truck-line"></i>Réceptions</div>
+          </div>
+        </div>
+
+        <div id="tab-bc" class="tab-content active" data-group="ach">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Bons de commande</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-bc')"><i class="ri-add-line"></i>Nouveau BC</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-bc"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-fourn" class="tab-content" data-group="ach">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Fournisseurs référencés</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-fourn')"><i class="ri-add-line"></i>Ajouter</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-fourn"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-recept" class="tab-content" data-group="ach">
+          <div class="card-body">
+            <div class="section-header"><h3>Réceptions — Mai 2026</h3></div>
+            <table>
+              <thead><tr><th>Date</th><th>BC Réf</th><th>Fournisseur</th><th>Articles</th><th>Montant</th><th>Qualité</th><th>Lié stock</th></tr></thead>
+              <tbody>
+                <tr><td>22/05/2026</td><td class="text-primary font-semi">BC-2026-041</td><td>Agri-Intrants SARL</td><td>Orge 5 000 kg</td><td>4 250 TND</td><td><span class="badge badge-success">conforme</span></td><td><span class="badge badge-success">✓ Oui</span></td></tr>
+                <tr><td>21/05/2026</td><td class="text-primary font-semi">BC-2026-040</td><td>Medis Veto</td><td>Médicaments ×15</td><td>225 TND</td><td><span class="badge badge-success">conforme</span></td><td><span class="badge badge-success">✓ Oui</span></td></tr>
+                <tr><td>20/05/2026</td><td class="text-primary font-semi">BC-2026-038</td><td>STEG — Électricité</td><td>Facture électricité</td><td>680 TND</td><td><span class="badge badge-info">service</span></td><td><span class="badge badge-secondary">N/A</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal BC -->
+<div class="modal-overlay" id="modal-bc">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouveau bon de commande</h3>
+      <button class="modal-close" onclick="closeModal('modal-bc')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Fournisseur</label><select class="form-control"><option>Agri-Intrants SARL</option><option>Medis Veto</option><option>Packaging Pro</option></select></div>
+        <div class="form-group"><label class="form-label">Date commande</label><input class="form-control" type="date" value="2026-05-22"></div>
+        <div class="form-group"><label class="form-label">Date livraison prévue</label><input class="form-control" type="date" value="2026-05-28"></div>
+        <div class="form-group"><label class="form-label">Mode paiement</label><select class="form-control"><option>30 jours</option><option>60 jours</option><option>Comptant</option></select></div>
+      </div>
+      <div class="form-group mt-8"><label class="form-label">Articles commandés</label>
+        <table style="width:100%;font-size:12px;border:1px solid var(--border);border-radius:4px">
+          <thead><tr><th style="padding:8px">Article</th><th style="padding:8px">Qté</th><th style="padding:8px">Prix unitaire</th><th style="padding:8px">Montant</th></tr></thead>
+          <tbody>
+            <tr><td style="padding:6px"><input class="form-control" style="font-size:12px" value="Orge"></td><td style="padding:6px"><input class="form-control" style="font-size:12px;width:70px" value="5000"></td><td style="padding:6px"><input class="form-control" style="font-size:12px;width:80px" value="0.850"></td><td style="padding:6px;font-weight:600">4 250 TND</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-bc')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-bc')"><i class="ri-save-line"></i>Créer BC</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal fournisseur -->
+<div class="modal-overlay" id="modal-fourn">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Ajouter un fournisseur</h3>
+      <button class="modal-close" onclick="closeModal('modal-fourn')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Raison sociale</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">MF / RNE</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Catégorie</label><select class="form-control"><option>Aliments bétail</option><option>Services</option><option>Matériel</option></select></div>
+        <div class="form-group"><label class="form-label">Ville</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Téléphone</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Délai paiement (jours)</label><select class="form-control"><option>0</option><option>30</option><option>60</option><option>90</option></select></div>
+        <div class="form-group"><label class="form-label">RIB Bancaire</label><input class="form-control" placeholder="TN..."></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-fourn')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-fourn')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById('sidebar-container').innerHTML = buildSidebar('achats');
+  document.getElementById('header-container').innerHTML = buildHeader('Achats & Fournisseurs', { name: 'Admin Système', initials: 'AS' });
+  initTabs();
+
+  document.getElementById('tbl-bc').innerHTML = `
+    <thead><tr><th>Réf</th><th>Fournisseur</th><th>Date</th><th>Montant HT</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody>
+      ${MOCK.bonsCommande.map(b => `<tr>
+        <td class="text-primary font-semi">${b.ref}</td>
+        <td>${b.fournisseur}</td>
+        <td class="text-muted text-sm">${b.date}</td>
+        <td class="font-semi">${fmtInt(b.montant)} TND</td>
+        <td>${badgeStatut(b.statut)}</td>
+        <td><div class="flex gap-8">
+          <button class="btn btn-xs btn-light"><i class="ri-eye-line"></i></button>
+          <button class="btn btn-xs btn-light"><i class="ri-printer-line"></i></button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody>`;
+
+  document.getElementById('tbl-fourn').innerHTML = `
+    <thead><tr><th>Raison sociale</th><th>Catégorie</th><th>Ville</th><th>Solde dû</th><th>Actions</th></tr></thead>
+    <tbody>
+      ${MOCK.fournisseurs.map(f => `<tr>
+        <td class="font-semi">${f.nom}</td>
+        <td><span class="chip" style="font-size:11px">${f.categorie}</span></td>
+        <td>${f.ville}</td>
+        <td class="${f.solde > 0 ? 'text-danger font-semi' : 'text-muted'}">${f.solde > 0 ? fmtInt(f.solde)+' TND' : '—'}</td>
+        <td><div class="flex gap-8">
+          <button class="btn btn-xs btn-light"><i class="ri-edit-line"></i></button>
+          <button class="btn btn-xs btn-outline">Historique</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody>`;
+</script>
+</body>
+</html>

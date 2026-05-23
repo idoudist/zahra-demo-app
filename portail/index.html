@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Portail Agriculteurs — SMBSA Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    body { background: #f0f3f6; }
+    .portail-wrapper { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; background: #f0f3f6; }
+    .page-section { display: none; padding-bottom: 70px; }
+    .page-section.active { display: block; }
+  </style>
+</head>
+<body class="portail-body">
+<div class="portail-wrapper">
+
+  <!-- Header -->
+  <div class="portail-header">
+    <div>
+      <div style="font-size:12px;opacity:0.7;margin-bottom:2px">SMBSA Ezahra</div>
+      <h1>Portail Agriculteurs</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white">BA</div>
+    </div>
+  </div>
+
+  <!-- Accueil -->
+  <div class="page-section active" id="sec-accueil">
+    <div class="portail-content" style="padding-top:16px">
+
+      <!-- Bonjour -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text-muted)">Bonjour,</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text)">Ben Ali Ahmed</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px"><i class="ri-map-pin-line"></i> Chorbane Nord — Code : AGR-0042</div>
+      </div>
+
+      <!-- Solde card -->
+      <div class="portail-card" style="background:linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);border:none;margin-bottom:14px">
+        <div style="padding:20px">
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Solde disponible</div>
+          <div style="font-size:38px;font-weight:800;color:white;line-height:1">4 256,300</div>
+          <div style="font-size:14px;color:rgba(255,255,255,0.8);margin-top:4px">TND — après avances</div>
+          <div style="display:flex;gap:16px;margin-top:14px">
+            <div style="text-align:center">
+              <div style="font-size:16px;font-weight:700;color:white">248 600</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.7)">L collectés — Mai</div>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,0.2)"></div>
+            <div style="text-align:center">
+              <div style="font-size:16px;font-weight:700;color:white">1,350</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.7)">TND/L — prix actuel</div>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,0.2)"></div>
+            <div style="text-align:center">
+              <div style="font-size:16px;font-weight:700;color:#ffd700">500,000</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.7)">TND avances</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dernières livraisons -->
+      <div class="portail-card">
+        <div class="portail-card-header">
+          <span><i class="ri-drop-line text-primary"></i> Dernières livraisons</span>
+          <span onclick="switchTo('sec-livraisons')" style="font-size:12px;color:var(--primary-light);cursor:pointer">Tout voir</span>
+        </div>
+        <div class="portail-card-body" style="padding:0 16px">
+          ${MOCK.agriculteur.livraisons.slice(0,5).map(l => `
+            <div class="portail-row">
+              <div>
+                <div style="font-size:13px;font-weight:500">${l.date}</div>
+                <div style="font-size:11px;color:var(--text-muted)">${l.periode}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:600">${l.qte} L</div>
+                <div style="font-size:12px;color:var(--accent);font-weight:600">${l.montant.toFixed(3)} TND</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Relevé mensuel -->
+      <div class="portail-card">
+        <div class="portail-card-header">
+          <span><i class="ri-file-text-line text-primary"></i> Relevé mensuel</span>
+        </div>
+        <div class="portail-card-body">
+          <div style="display:flex;gap:10px;margin-bottom:12px">
+            <div style="flex:1;background:#f8fafc;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)">
+              <div style="font-size:18px;font-weight:700;color:var(--primary)">3 280 L</div>
+              <div style="font-size:10px;color:var(--text-muted)">Total livré en Mai</div>
+            </div>
+            <div style="flex:1;background:#f8fafc;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)">
+              <div style="font-size:18px;font-weight:700;color:var(--accent)">4 428 TND</div>
+              <div style="font-size:10px;color:var(--text-muted)">Montant brut</div>
+            </div>
+          </div>
+          <button style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i class="ri-download-line"></i> Télécharger relevé Mai 2026 (PDF)
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Livraisons -->
+  <div class="page-section" id="sec-livraisons">
+    <div class="portail-content" style="padding-top:16px">
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--text)">Toutes mes livraisons</h2>
+
+      <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px">
+        <button style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--primary);color:white;font-size:12px;cursor:pointer;white-space:nowrap">Mai 2026</button>
+        <button style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:white;font-size:12px;cursor:pointer;white-space:nowrap">Avril 2026</button>
+        <button style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:white;font-size:12px;cursor:pointer;white-space:nowrap">Mars 2026</button>
+      </div>
+
+      <div class="portail-card">
+        <div class="portail-card-body" style="padding:0 16px">
+          ${MOCK.agriculteur.livraisons.map(l => `
+            <div class="portail-row">
+              <div>
+                <div style="font-size:13px;font-weight:500">${l.date}</div>
+                <div style="font-size:11px;color:var(--text-muted)">${l.periode} — ${l.prix.toFixed(3)} TND/L</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:600">${l.qte} L</div>
+                <div style="font-size:12px;color:var(--accent);font-weight:600">${l.montant.toFixed(3)} TND</div>
+              </div>
+            </div>`).join('')}
+        </div>
+        <div style="padding:12px 16px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:700">
+          <span>Total Mai 2026</span>
+          <span style="color:var(--accent)">${MOCK.agriculteur.livraisons.reduce((a,l)=>a+l.montant,0).toFixed(3)} TND</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compte -->
+  <div class="page-section" id="sec-compte">
+    <div class="portail-content" style="padding-top:16px">
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:14px">Mon compte</h2>
+
+      <div class="portail-card">
+        <div class="portail-card-header"><span><i class="ri-user-line"></i> Informations personnelles</span></div>
+        <div class="portail-card-body">
+          <div class="portail-row"><span class="text-muted text-sm">Code agriculteur</span><span class="font-semi">AGR-0042</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Nom & Prénom</span><span class="font-semi">Ben Ali Ahmed</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Secteur</span><span class="font-semi">Chorbane Nord</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Collecteur assigné</span><span class="font-semi">Khediri Moncef</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Téléphone</span><span class="font-semi">xx xxx xxx</span></div>
+        </div>
+      </div>
+
+      <div class="portail-card">
+        <div class="portail-card-header"><span><i class="ri-bill-line"></i> Avances en cours</span></div>
+        <div class="portail-card-body">
+          <div class="portail-row"><span class="text-muted text-sm">Avance accordée</span><span class="text-danger font-semi">500,000 TND</span></div>
+          <div class="portail-row"><span class="text-muted text-sm">Remboursé</span><span class="text-success font-semi">0,000 TND</span></div>
+          <div class="portail-row" style="border:none"><span class="text-muted text-sm">Reste à déduire</span><span class="text-danger font-semi">500,000 TND</span></div>
+        </div>
+      </div>
+
+      <div class="portail-card">
+        <div class="portail-card-header"><span><i class="ri-shopping-bag-line"></i> Mes achats produits</span></div>
+        <div class="portail-card-body" style="padding:0 16px">
+          <div class="portail-row"><span>Orge 200 kg — 15/05/2026</span><span class="font-semi">170,000 TND</span></div>
+          <div class="portail-row"><span>Concentré 50 kg — 10/05/2026</span><span class="font-semi">60,000 TND</span></div>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border)">
+          <button style="width:100%;padding:10px;background:var(--primary-xlight);color:var(--primary);border:1px solid var(--primary-light);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+            <i class="ri-download-line"></i> Télécharger mes factures
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom navigation -->
+  <nav style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:white;border-top:1px solid var(--border);display:flex;z-index:100">
+    <div class="portail-nav-item active" id="nav-accueil" onclick="switchTo('sec-accueil','nav-accueil')">
+      <i class="ri-home-line"></i>Accueil
+    </div>
+    <div class="portail-nav-item" id="nav-livraisons" onclick="switchTo('sec-livraisons','nav-livraisons')">
+      <i class="ri-drop-line"></i>Livraisons
+    </div>
+    <div class="portail-nav-item" id="nav-compte" onclick="switchTo('sec-compte','nav-compte')">
+      <i class="ri-user-line"></i>Mon compte
+    </div>
+    <a href="../index.html" class="portail-nav-item" style="color:var(--text-muted)">
+      <i class="ri-logout-box-line"></i>Déconnexion
+    </a>
+  </nav>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  function switchTo(sectionId, navId) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.portail-nav-item').forEach(n => n.classList.remove('active'));
+    const sec = document.getElementById(sectionId);
+    if (sec) sec.classList.add('active');
+    if (navId) {
+      const nav = document.getElementById(navId);
+      if (nav) nav.classList.add('active');
+    }
+  }
+</script>
+</body>
+</html>

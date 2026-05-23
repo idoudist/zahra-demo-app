@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des stocks — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .ref-badge {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'Courier New', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      color: #0d4f6e;
+      letter-spacing: 0.5px;
+    }
+    .action-separator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 10px;
+    }
+    .action-separator::before,
+    .action-separator::after { content:''; flex:1; height:1px; background:var(--border); }
+    .action-separator span { font-size:11px; color:var(--text-muted); white-space:nowrap; }
+    .stock-live { font-size:13px; padding:10px 14px; background:#f0f8ff; border:1px solid #bae0fd; border-radius:var(--radius-sm); margin-bottom:14px; }
+    .stock-live-val { font-size:20px; font-weight:700; color:var(--primary); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div id="header-container"></div>
+    <div class="page-body">
+
+      <div class="kpi-grid mb-24" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card blue">
+          <i class="ri-archive-fill kpi-icon"></i>
+          <div class="kpi-label">Références en stock</div>
+          <div class="kpi-value">8</div>
+          <div class="kpi-sub">Valeur totale 39 170 TND</div>
+        </div>
+        <div class="kpi-card red">
+          <i class="ri-alert-fill kpi-icon"></i>
+          <div class="kpi-label">Alertes stock mini</div>
+          <div class="kpi-value" style="color:var(--danger)">2</div>
+          <div class="kpi-sub">PRD-006, PRD-005</div>
+        </div>
+        <div class="kpi-card green">
+          <i class="ri-arrow-up-circle-fill kpi-icon"></i>
+          <div class="kpi-label">Entrées du mois</div>
+          <div class="kpi-value">5 <span class="kpi-unit">mvts</span></div>
+          <div class="kpi-sub">Réappro. + nouveaux</div>
+        </div>
+        <div class="kpi-card orange">
+          <i class="ri-arrow-down-circle-fill kpi-icon"></i>
+          <div class="kpi-label">Sorties du mois</div>
+          <div class="kpi-value">12 <span class="kpi-unit">mvts</span></div>
+          <div class="kpi-sub">Consommation courante</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding-bottom:0">
+          <div class="tabs" data-group="stk">
+            <div class="tab active" data-group="stk" data-target="tab-catalogue"><i class="ri-archive-line"></i>Catalogue & niveaux</div>
+            <div class="tab" data-group="stk" data-target="tab-mvt"><i class="ri-swap-line"></i>Mouvements</div>
+            <div class="tab" data-group="stk" data-target="tab-stats"><i class="ri-bar-chart-line"></i>Statistiques</div>
+            <div class="tab" data-group="stk" data-target="tab-inventaire"><i class="ri-list-check-2"></i>Inventaire</div>
+          </div>
+        </div>
+
+        <!-- ===== CATALOGUE ===== -->
+        <div id="tab-catalogue" class="tab-content active" data-group="stk">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Articles référencés</h3>
+              <div class="flex gap-8">
+                <div class="search-bar"><i class="ri-search-line"></i><input placeholder="Référence, désignation..."></div>
+                <!-- Les deux actions distinctes -->
+                <button class="btn btn-success btn-sm" onclick="openModal('modal-reappro')">
+                  <i class="ri-refresh-line"></i>Réapprovisionner
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-nouveau')">
+                  <i class="ri-add-line"></i>Nouveau produit
+                </button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-stocks"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== MOUVEMENTS ===== -->
+        <div id="tab-mvt" class="tab-content" data-group="stk">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Mouvements de stock — Mai 2026</h3>
+              <div class="flex gap-8">
+                <button class="btn btn-success btn-sm" onclick="openModal('modal-reappro')"><i class="ri-refresh-line"></i>Réappro.</button>
+                <button class="btn btn-warning btn-sm" onclick="openModal('modal-sortie')"><i class="ri-arrow-down-line"></i>Sortie</button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-mvt"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== STATISTIQUES ===== -->
+        <div id="tab-stats" class="tab-content" data-group="stk">
+          <div class="card-body">
+            <div class="section-header"><h3>Vue graphique des stocks</h3></div>
+            <div style="display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px">
+              <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+                <div style="font-size:13px;font-weight:600;margin-bottom:12px"><i class="ri-bar-chart-line text-primary"></i> Niveaux actuels vs stock minimum</div>
+                <canvas id="chart-stocks" height="100"></canvas>
+              </div>
+              <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+                <div style="font-size:13px;font-weight:600;margin-bottom:12px"><i class="ri-pie-chart-line text-primary"></i> Valeur par catégorie (TND)</div>
+                <canvas id="chart-valeur" height="150"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== INVENTAIRE ===== -->
+        <div id="tab-inventaire" class="tab-content" data-group="stk">
+          <div class="card-body">
+            <div class="alert alert-info mb-16"><i class="ri-information-line"></i>Dernier inventaire physique : <strong>30/04/2026</strong> — Rapport signé disponible.</div>
+            <div class="section-header">
+              <h3>Inventaire — Valorisation CMP</h3>
+              <div class="flex gap-8">
+                <button class="btn btn-light btn-sm"><i class="ri-download-line"></i>Export Excel</button>
+                <button class="btn btn-primary btn-sm"><i class="ri-clipboard-line"></i>Lancer inventaire</button>
+              </div>
+            </div>
+            <table id="tbl-inventaire"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL : NOUVEAU PRODUIT ===== -->
+<div class="modal-overlay" id="modal-nouveau">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="ri-add-circle-line text-primary"></i> &nbsp;Ajouter un nouveau produit</h3>
+      <button class="modal-close" onclick="closeModal('modal-nouveau')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-info mb-16" style="font-size:12px">
+        <i class="ri-information-line"></i>
+        Une <strong>référence unique</strong> est générée automatiquement. Elle ne peut pas être modifiée après création.
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Référence unique <span style="color:var(--danger)">*</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="form-control" value="PRD-009" id="input-ref-new" readonly style="background:#f8fafc;font-family:'Courier New';font-weight:700;color:var(--primary)">
+            <button class="btn btn-light btn-sm" onclick="regenRef()" title="Régénérer"><i class="ri-refresh-line"></i></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Désignation <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" placeholder="Ex: Farine de soja" id="input-designation">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catégorie</label>
+          <select class="form-control" id="input-categorie">
+            <option>Aliments bétail</option>
+            <option>Médicaments</option>
+            <option>Emballages</option>
+            <option>Matériel</option>
+            <option>Consommables</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unité de mesure</label>
+          <select class="form-control">
+            <option>kg</option><option>litre</option><option>unité</option><option>bottes</option><option>sac</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock initial</label>
+          <input class="form-control" type="number" placeholder="0" id="input-stock-init">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock minimum (alerte)</label>
+          <input class="form-control" type="number" placeholder="0" id="input-stock-min">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prix d'achat unitaire (TND)</label>
+          <input class="form-control" type="number" step="0.001" placeholder="0.000" id="input-prix-achat" oninput="calcMarge()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prix de vente unitaire (TND)</label>
+          <input class="form-control" type="number" step="0.001" placeholder="0.000" id="input-prix-vente" oninput="calcMarge()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Marge brute</label>
+          <input class="form-control" id="input-marge" readonly style="background:#f0fff4;font-weight:600;color:var(--accent)" placeholder="Calculée auto">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emplacement magasin</label>
+          <input class="form-control" placeholder="Ex: Zone A — Étagère 2">
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Notes / Description</label>
+          <input class="form-control" placeholder="Optionnel...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-nouveau')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-nouveau')"><i class="ri-save-line"></i>Créer le produit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL : RÉAPPROVISIONNEMENT ===== -->
+<div class="modal-overlay" id="modal-reappro">
+  <div class="modal" style="width:580px">
+    <div class="modal-header">
+      <h3><i class="ri-refresh-line text-success"></i> &nbsp;Réapprovisionnement — Produit existant</h3>
+      <button class="modal-close" onclick="closeModal('modal-reappro')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label class="form-label">Sélectionner le produit à réapprovisionner</label>
+        <select class="form-control" id="select-reappro" onchange="updateReapproInfo()">
+          <option value="">— Choisir un produit existant —</option>
+        </select>
+      </div>
+
+      <!-- Info produit sélectionné -->
+      <div id="reappro-info" style="display:none">
+        <div class="stock-live mb-12">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span class="text-muted text-sm">Référence :</span>
+            <span class="ref-badge" id="reappro-ref">—</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span class="text-muted text-sm">Stock actuel :</span>
+            <span class="stock-live-val" id="reappro-stock-actuel">—</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="text-muted text-sm">Stock minimum :</span>
+            <span id="reappro-stock-min" class="font-semi">—</span>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Quantité à ajouter <span style="color:var(--danger)">*</span></label>
+            <input class="form-control" type="number" id="reappro-qte" placeholder="0" oninput="calcNouveauStock()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nouveau stock (après entrée)</label>
+            <input class="form-control" id="reappro-nouveau-stock" readonly style="background:#f0fff4;font-weight:700;color:var(--accent)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date de réception</label>
+            <input class="form-control" type="date" value="2026-05-22">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prix unitaire (TND)</label>
+            <input class="form-control" type="number" step="0.001" id="reappro-prix" placeholder="0.000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fournisseur</label>
+            <select class="form-control">
+              <option>— Sélectionner —</option>
+              <option>Agri-Intrants SARL</option>
+              <option>Medis Veto</option>
+              <option>Packaging Pro</option>
+              <option>Autre...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bon de commande lié</label>
+            <input class="form-control" placeholder="BC-2026-xxx (optionnel)">
+          </div>
+          <div class="form-group" style="grid-column:span 2">
+            <label class="form-label">Note de réception</label>
+            <input class="form-control" placeholder="Qualité, lot, remarques...">
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-reappro')">Annuler</button>
+      <button class="btn btn-success" onclick="closeModal('modal-reappro')"><i class="ri-check-line"></i>Valider l'entrée</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL : SORTIE ===== -->
+<div class="modal-overlay" id="modal-sortie">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="ri-arrow-down-circle-line text-warning"></i> &nbsp;Sortie de stock</h3>
+      <button class="modal-close" onclick="closeModal('modal-sortie')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Produit</label>
+        <select class="form-control" id="select-sortie" onchange="updateSortieInfo()">
+          <option value="">— Choisir un produit —</option>
+        </select>
+      </div>
+      <div id="sortie-info" style="display:none">
+        <div class="stock-live mb-12">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span class="text-muted text-sm">Ref : <span class="ref-badge" id="sortie-ref"></span></span>
+            <span class="text-muted text-sm">Stock actuel : <strong class="text-primary" id="sortie-stock-actuel"></strong></span>
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Quantité sortie</label>
+            <input class="form-control" type="number" id="sortie-qte" oninput="calcResteSortie()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock restant après</label>
+            <input class="form-control" id="sortie-reste" readonly style="background:#fffbeb;font-weight:700">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-control" type="date" value="2026-05-22">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Motif</label>
+            <select class="form-control">
+              <option>Consommation animaux</option>
+              <option>Vente</option>
+              <option>Perte / casse</option>
+              <option>Ajustement inventaire</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-sortie')">Annuler</button>
+      <button class="btn btn-warning" onclick="closeModal('modal-sortie')"><i class="ri-save-line"></i>Valider sortie</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = buildSidebar('stocks');
+document.getElementById('header-container').innerHTML = buildHeader('Gestion des stocks', { name: 'Admin Système', initials: 'AS' });
+initTabs();
+
+// Remplir les selects des modals
+function populateSelects() {
+  const selReappro = document.getElementById('select-reappro');
+  const selSortie  = document.getElementById('select-sortie');
+  MOCK.stocks.forEach(s => {
+    const opt1 = new Option(`${s.ref}  —  ${s.nom}  (${fmtInt(s.qte)} ${s.unite})`, s.ref);
+    const opt2 = new Option(`${s.ref}  —  ${s.nom}  (stock: ${fmtInt(s.qte)} ${s.unite})`, s.ref);
+    selReappro.add(opt1);
+    selSortie.add(opt2);
+  });
+}
+populateSelects();
+
+function updateReapproInfo() {
+  const ref = document.getElementById('select-reappro').value;
+  const info = document.getElementById('reappro-info');
+  if (!ref) { info.style.display = 'none'; return; }
+  const prod = MOCK.stocks.find(s => s.ref === ref);
+  if (!prod) return;
+  info.style.display = 'block';
+  document.getElementById('reappro-ref').textContent = prod.ref;
+  document.getElementById('reappro-stock-actuel').textContent = `${fmtInt(prod.qte)} ${prod.unite}`;
+  document.getElementById('reappro-stock-min').textContent = `${fmtInt(prod.min)} ${prod.unite}`;
+  document.getElementById('reappro-prix').value = prod.prix.toFixed(3);
+  document.getElementById('reappro-qte').value = '';
+  document.getElementById('reappro-nouveau-stock').value = '';
+}
+
+function calcNouveauStock() {
+  const ref = document.getElementById('select-reappro').value;
+  const qte = parseFloat(document.getElementById('reappro-qte').value) || 0;
+  if (!ref) return;
+  const prod = MOCK.stocks.find(s => s.ref === ref);
+  if (!prod) return;
+  const nouveau = prod.qte + qte;
+  document.getElementById('reappro-nouveau-stock').value = `${fmtInt(nouveau)} ${prod.unite}`;
+}
+
+function updateSortieInfo() {
+  const ref = document.getElementById('select-sortie').value;
+  const info = document.getElementById('sortie-info');
+  if (!ref) { info.style.display = 'none'; return; }
+  const prod = MOCK.stocks.find(s => s.ref === ref);
+  if (!prod) return;
+  info.style.display = 'block';
+  document.getElementById('sortie-ref').textContent = prod.ref;
+  document.getElementById('sortie-stock-actuel').textContent = `${fmtInt(prod.qte)} ${prod.unite}`;
+  document.getElementById('sortie-qte').value = '';
+  document.getElementById('sortie-reste').value = '';
+}
+
+function calcResteSortie() {
+  const ref = document.getElementById('select-sortie').value;
+  const qte = parseFloat(document.getElementById('sortie-qte').value) || 0;
+  if (!ref) return;
+  const prod = MOCK.stocks.find(s => s.ref === ref);
+  if (!prod) return;
+  const reste = prod.qte - qte;
+  const el = document.getElementById('sortie-reste');
+  el.value = `${fmtInt(reste)} ${prod.unite}`;
+  el.style.color = reste < prod.min ? 'var(--danger)' : 'var(--accent)';
+}
+
+let refCounter = 9;
+function regenRef() {
+  refCounter++;
+  document.getElementById('input-ref-new').value = `PRD-${String(refCounter).padStart(3,'0')}`;
+}
+
+function calcMarge() {
+  const pa = parseFloat(document.getElementById('input-prix-achat').value) || 0;
+  const pv = parseFloat(document.getElementById('input-prix-vente').value) || 0;
+  const el = document.getElementById('input-marge');
+  if (pa > 0 && pv > 0) {
+    const marge = pv - pa;
+    const pct = ((marge / pa) * 100).toFixed(1);
+    el.value = `${marge.toFixed(3)} TND  (${pct}%)`;
+    el.style.color = marge >= 0 ? 'var(--accent)' : 'var(--danger)';
+  } else {
+    el.value = '';
+  }
+}
+
+// Prix de vente mock (markup sur prix d'achat)
+const PRIX_VENTE = {
+  'PRD-001': 1.10,  // Orge
+  'PRD-002': 0.60,  // Son de blé
+  'PRD-003': 1.65,  // Concentré vaches
+  'PRD-004': 6.00,  // Foin
+  'PRD-005': 22.00, // Médicaments
+  'PRD-006': 16.00, // Bidons 10L
+  'PRD-007': 5.20,  // Produit désinfectant
+  'PRD-008': 2.80,  // Semences maïs
+};
+
+// ===== TABLE CATALOGUE =====
+document.getElementById('tbl-stocks').innerHTML = `
+  <thead><tr>
+    <th>Référence</th><th>Désignation</th><th>Unité</th>
+    <th>Stock actuel</th><th>Stock mini</th><th>Niveau</th>
+    <th class="text-right">P. Achat</th>
+    <th class="text-right">P. Vente</th>
+    <th class="text-right">Marge</th>
+    <th>Alerte</th><th>Actions</th>
+  </tr></thead>
+  <tbody>
+    ${MOCK.stocks.map(s => {
+      const pct = Math.min(100, Math.round(s.qte / (s.min * 4) * 100));
+      const alerte = s.qte <= s.min;
+      const proche = !alerte && s.qte <= s.min * 1.5;
+      const color = alerte ? 'red' : (proche ? 'orange' : 'green');
+      const pv = PRIX_VENTE[s.ref] || 0;
+      const marge = pv - s.prix;
+      const margePct = s.prix > 0 ? ((marge/s.prix)*100).toFixed(0) : 0;
+      return `<tr style="${alerte ? 'background:#fff5f5' : ''}">
+        <td><span class="ref-badge">${s.ref}</span></td>
+        <td class="font-semi">${s.nom}</td>
+        <td class="text-muted">${s.unite}</td>
+        <td class="font-semi ${alerte ? 'text-danger' : ''}">${fmtInt(s.qte)} ${s.unite}</td>
+        <td class="text-muted">${fmtInt(s.min)} ${s.unite}</td>
+        <td style="min-width:110px">
+          <div class="progress"><div class="progress-bar ${color}" style="width:${pct}%"></div></div>
+          <div class="text-xs text-muted mt-4">${pct}%</div>
+        </td>
+        <td class="text-right text-muted">${s.prix.toFixed(3)}</td>
+        <td class="text-right font-semi">${pv.toFixed(3)}</td>
+        <td class="text-right">
+          <span style="color:${marge>=0?'var(--accent)':'var(--danger)'};font-weight:600">
+            +${marge.toFixed(3)}<br>
+            <span style="font-size:10px;font-weight:500">(${margePct}%)</span>
+          </span>
+        </td>
+        <td>${alerte
+          ? '<span class="badge badge-danger"><i class="ri-alarm-warning-line"></i> ALERTE</span>'
+          : proche
+            ? '<span class="badge badge-warning">Proche mini</span>'
+            : '<span class="badge badge-success">OK</span>'}</td>
+        <td>
+          <div class="flex gap-8">
+            <button class="btn btn-xs btn-success" onclick="document.getElementById('select-reappro').value='${s.ref}';openModal('modal-reappro');updateReapproInfo()" title="Réapprovisionner">
+              <i class="ri-refresh-line"></i>Réappro.
+            </button>
+            <button class="btn btn-xs btn-light" onclick="document.getElementById('select-sortie').value='${s.ref}';openModal('modal-sortie');updateSortieInfo()" title="Sortie">
+              <i class="ri-arrow-down-line"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}
+  </tbody>`;
+
+// ===== TABLE MOUVEMENTS =====
+document.getElementById('tbl-mvt').innerHTML = `
+  <thead><tr>
+    <th>Date</th><th>Référence</th><th>Type</th><th>Désignation</th>
+    <th>Quantité</th><th>Stock après</th><th>Origine / Motif</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>22/05/2026</td><td><span class="ref-badge">PRD-001</span></td>
+      <td><span class="badge badge-success">↑ Réappro.</span></td>
+      <td>Orge</td><td class="text-success font-semi">+5 000 kg</td><td>18 500 kg</td><td>Agri-Intrants SARL — BC-2026-041</td></tr>
+    <tr><td>22/05/2026</td><td><span class="ref-badge">PRD-003</span></td>
+      <td><span class="badge badge-warning">↓ Sortie</span></td>
+      <td>Concentré vaches</td><td class="text-danger font-semi">−200 kg</td><td>8 400 kg</td><td>Consommation animaux</td></tr>
+    <tr><td>21/05/2026</td><td><span class="ref-badge">PRD-002</span></td>
+      <td><span class="badge badge-warning">↓ Sortie</span></td>
+      <td>Son de blé</td><td class="text-danger font-semi">−300 kg</td><td>12 000 kg</td><td>Consommation animaux</td></tr>
+    <tr><td>21/05/2026</td><td><span class="ref-badge">PRD-005</span></td>
+      <td><span class="badge badge-success">↑ Réappro.</span></td>
+      <td>Médicaments</td><td class="text-success font-semi">+15 unités</td><td>45 unités</td><td>Medis Veto — BC-2026-040</td></tr>
+    <tr><td>20/05/2026</td><td><span class="ref-badge">PRD-001</span></td>
+      <td><span class="badge badge-warning">↓ Sortie</span></td>
+      <td>Orge</td><td class="text-danger font-semi">−800 kg</td><td>14 300 kg</td><td>Consommation animaux</td></tr>
+  </tbody>`;
+
+// ===== TABLE INVENTAIRE =====
+document.getElementById('tbl-inventaire').innerHTML = `
+  <thead><tr>
+    <th>Référence</th><th>Désignation</th><th>Stock théorique</th>
+    <th>Stock physique saisi</th><th>Écart</th><th>Valeur CMP</th>
+  </tr></thead>
+  <tbody>
+    ${MOCK.stocks.map(s => `<tr>
+      <td><span class="ref-badge">${s.ref}</span></td>
+      <td class="font-semi">${s.nom}</td>
+      <td>${fmtInt(s.qte)} ${s.unite}</td>
+      <td><input class="form-control" type="number" value="${s.qte}" style="width:100px"></td>
+      <td class="text-muted">0</td>
+      <td class="font-semi">${fmtInt(s.valeur)} TND</td>
+    </tr>`).join('')}
+  </tbody>
+  <tfoot>
+    <tr style="background:#f8fafc;font-weight:700">
+      <td colspan="5" style="padding:10px 14px">VALEUR TOTALE STOCK</td>
+      <td style="padding:10px 14px" class="text-primary">${fmtInt(MOCK.stocks.reduce((a,s)=>a+s.valeur,0))} TND</td>
+    </tr>
+  </tfoot>`;
+
+// ===== CHARTS STATISTIQUES =====
+function buildStatsCharts() {
+  // Bar chart niveaux vs minimum
+  new Chart(document.getElementById('chart-stocks'), {
+    type: 'bar',
+    data: {
+      labels: MOCK.stocks.map(s => s.ref),
+      datasets: [
+        {
+          label: 'Stock actuel',
+          data: MOCK.stocks.map(s => s.qte),
+          backgroundColor: MOCK.stocks.map(s => s.qte <= s.min ? 'rgba(231,76,60,0.75)' : 'rgba(26,127,163,0.7)'),
+          borderRadius: 4,
+        },
+        {
+          label: 'Stock minimum',
+          data: MOCK.stocks.map(s => s.min),
+          backgroundColor: 'rgba(243,156,18,0.35)',
+          borderColor: '#f39c12',
+          borderWidth: 1.5,
+          borderRadius: 4,
+          type: 'line',
+          pointRadius: 4,
+          tension: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { font: { size: 11 } } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Pie valeur par catégorie
+  new Chart(document.getElementById('chart-valeur'), {
+    type: 'doughnut',
+    data: {
+      labels: MOCK.stocks.map(s => s.nom),
+      datasets: [{
+        data: MOCK.stocks.map(s => s.valeur),
+        backgroundColor: ['#1a7fa3','#27ae60','#8e44ad','#f39c12','#e74c3c','#2980b9','#16a085','#d35400'],
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: {
+      plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmtInt(ctx.raw)} TND` } }
+      },
+      cutout: '55%'
+    }
+  });
+}
+document.querySelectorAll('.tab[data-target="tab-stats"]').forEach(t =>
+  t.addEventListener('click', () => setTimeout(buildStatsCharts, 50))
+);
+</script>
+</body>
+</html>

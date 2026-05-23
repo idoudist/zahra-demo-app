@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ventes & Facturation — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div id="header-container"></div>
+    <div class="page-body">
+
+      <div class="kpi-grid mb-24" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card green"><i class="ri-money-dollar-circle-fill kpi-icon"></i><div class="kpi-label">CA du mois</div><div class="kpi-value">312 500 <span class="kpi-unit">TND</span></div><div class="kpi-sub">89 factures émises</div></div>
+        <div class="kpi-card orange"><i class="ri-time-fill kpi-icon"></i><div class="kpi-label">Impayés</div><div class="kpi-value">550 <span class="kpi-unit">TND</span></div><div class="kpi-sub">2 factures en retard</div></div>
+        <div class="kpi-card blue"><i class="ri-building-2-fill kpi-icon"></i><div class="kpi-label">Client principal</div><div class="kpi-value" style="font-size:14px;margin-top:4px">CLM</div><div class="kpi-sub">99,8% du CA</div></div>
+        <div class="kpi-card purple"><i class="ri-check-double-fill kpi-icon"></i><div class="kpi-label">Factures payées</div><div class="kpi-value">87 <span class="kpi-unit">/ 89</span></div><div class="kpi-sub">97,8% taux recouvrement</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding-bottom:0">
+          <div class="tabs" data-group="vte">
+            <div class="tab active" data-group="vte" data-target="tab-fac"><i class="ri-file-list-3-line"></i>Factures</div>
+            <div class="tab" data-group="vte" data-target="tab-clients"><i class="ri-contacts-line"></i>Clients</div>
+            <div class="tab" data-group="vte" data-target="tab-bl"><i class="ri-truck-line"></i>Bons de livraison</div>
+          </div>
+        </div>
+
+        <div id="tab-fac" class="tab-content active" data-group="vte">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Factures — Mai 2026</h3>
+              <div class="flex gap-8">
+                <div class="search-bar"><i class="ri-search-line"></i><input placeholder="Réf, client..."></div>
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-fac')"><i class="ri-add-line"></i>Nouvelle facture</button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-fac"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-clients" class="tab-content" data-group="vte">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Clients</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-client')"><i class="ri-add-line"></i>Ajouter client</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-clients"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-bl" class="tab-content" data-group="vte">
+          <div class="card-body">
+            <div class="section-header"><h3>Bons de livraison</h3></div>
+            <table>
+              <thead><tr><th>Réf BL</th><th>Client</th><th>Date</th><th>Produit</th><th>Quantité</th><th>Facture liée</th></tr></thead>
+              <tbody>
+                <tr><td class="font-semi text-primary">BL-2026-089</td><td>Centrale Laitière Mahdia</td><td>22/05/2026</td><td>Lait frais collecté</td><td class="font-semi">13 720 L</td><td><span class="badge badge-success">FAC-2026-089</span></td></tr>
+                <tr><td class="font-semi text-primary">BL-2026-088</td><td>Centrale Laitière Mahdia</td><td>21/05/2026</td><td>Lait frais collecté</td><td class="font-semi">13 215 L</td><td><span class="badge badge-success">FAC-2026-088</span></td></tr>
+                <tr><td class="font-semi text-primary">BL-2026-087</td><td>Centrale Laitière Mahdia</td><td>20/05/2026</td><td>Lait frais collecté</td><td class="font-semi">13 407 L</td><td><span class="badge badge-success">FAC-2026-086</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nouvelle facture -->
+<div class="modal-overlay" id="modal-fac">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouvelle facture</h3>
+      <button class="modal-close" onclick="closeModal('modal-fac')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Client</label><select class="form-control"><option>Centrale Laitière Mahdia</option><option>Ben Ali Ahmed</option></select></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" value="2026-05-22"></div>
+        <div class="form-group"><label class="form-label">Produit / Service</label><input class="form-control" value="Lait frais collecté"></div>
+        <div class="form-group"><label class="form-label">Quantité (L)</label><input class="form-control" type="number" value="13720"></div>
+        <div class="form-group"><label class="form-label">Prix unitaire (TND)</label><input class="form-control" type="number" value="1.350" step="0.001"></div>
+        <div class="form-group"><label class="form-label">Montant total</label><input class="form-control" value="18 522,000 TND" readonly style="background:#f8fafc;font-weight:600"></div>
+        <div class="form-group"><label class="form-label">TVA</label><select class="form-control"><option>0% (lait frais — exonéré)</option><option>19%</option></select></div>
+        <div class="form-group"><label class="form-label">Échéance paiement</label><select class="form-control"><option>Comptant</option><option>30 jours</option><option>60 jours</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-fac')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-fac')"><i class="ri-save-line"></i>Émettre facture</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal client -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Ajouter un client</h3>
+      <button class="modal-close" onclick="closeModal('modal-client')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Nom / Raison sociale</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Catégorie</label><select class="form-control"><option>Laiterie</option><option>Agriculteur</option><option>Coopérative</option></select></div>
+        <div class="form-group"><label class="form-label">MF</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Téléphone</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Plafond crédit (TND)</label><input class="form-control" type="number"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-client')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-client')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById('sidebar-container').innerHTML = buildSidebar('ventes');
+  document.getElementById('header-container').innerHTML = buildHeader('Ventes & Facturation', { name: 'Admin Système', initials: 'AS' });
+  initTabs();
+
+  document.getElementById('tbl-fac').innerHTML = `
+    <thead><tr><th>Référence</th><th>Client</th><th>Date</th><th>Montant HT</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody>
+      ${MOCK.factures.map(f => `<tr>
+        <td class="text-primary font-semi">${f.ref}</td>
+        <td>${f.client}</td>
+        <td class="text-muted text-sm">${f.date}</td>
+        <td class="font-semi">${fmtInt(f.montant)} TND</td>
+        <td>${badgeStatut(f.statut)}</td>
+        <td><div class="flex gap-8">
+          <button class="btn btn-xs btn-light"><i class="ri-eye-line"></i></button>
+          <button class="btn btn-xs btn-light"><i class="ri-printer-line"></i>PDF</button>
+          ${f.statut==='impayée' ? '<button class="btn btn-xs btn-warning">Relancer</button>' : ''}
+        </div></td>
+      </tr>`).join('')}
+    </tbody>`;
+
+  document.getElementById('tbl-clients').innerHTML = `
+    <thead><tr><th>Nom</th><th>Catégorie</th><th>Ville</th><th>Solde dû</th><th>Crédit accordé</th><th></th></tr></thead>
+    <tbody>
+      ${MOCK.clients.map(c => `<tr>
+        <td class="font-semi">${c.nom}</td>
+        <td><span class="chip" style="font-size:11px">${c.categorie}</span></td>
+        <td>${c.ville}</td>
+        <td class="${c.solde>0?'text-danger font-semi':'text-muted'}">${c.solde>0?c.solde+' TND':'—'}</td>
+        <td class="text-muted">${c.credit>0?c.credit+' TND':'—'}</td>
+        <td><button class="btn btn-xs btn-light"><i class="ri-edit-line"></i></button></td>
+      </tr>`).join('')}
+    </tbody>`;
+</script>
+</body>
+</html>

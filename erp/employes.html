@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employés & Paie — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div id="header-container"></div>
+    <div class="page-body">
+
+      <div class="kpi-grid mb-24" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card blue">
+          <i class="ri-team-fill kpi-icon"></i>
+          <div class="kpi-label">Total employés</div>
+          <div class="kpi-value">10</div>
+          <div class="kpi-sub">9 actifs — 1 en congé</div>
+        </div>
+        <div class="kpi-card green">
+          <i class="ri-money-dollar-circle-fill kpi-icon"></i>
+          <div class="kpi-label">Masse salariale</div>
+          <div class="kpi-value">10 530 <span class="kpi-unit">TND</span></div>
+          <div class="kpi-sub">Mai 2026</div>
+        </div>
+        <div class="kpi-card orange">
+          <i class="ri-calendar-2-fill kpi-icon"></i>
+          <div class="kpi-label">Congés en cours</div>
+          <div class="kpi-value">1</div>
+          <div class="kpi-sub">Jbeli Kamel</div>
+        </div>
+        <div class="kpi-card purple">
+          <i class="ri-file-list-3-fill kpi-icon"></i>
+          <div class="kpi-label">Bulletins Mai 2026</div>
+          <div class="kpi-value">10 <span class="kpi-unit">générés</span></div>
+          <div class="kpi-sub">Décl. CNSS prête</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding-bottom:0">
+          <div class="tabs" data-group="emp">
+            <div class="tab active" data-group="emp" data-target="tab-liste"><i class="ri-team-line"></i>Liste employés</div>
+            <div class="tab" data-group="emp" data-target="tab-paie"><i class="ri-money-dollar-circle-line"></i>Bulletins de paie</div>
+            <div class="tab" data-group="emp" data-target="tab-cnss"><i class="ri-file-text-line"></i>Déclaration CNSS</div>
+            <div class="tab" data-group="emp" data-target="tab-conges"><i class="ri-calendar-line"></i>Congés & Pointage</div>
+          </div>
+        </div>
+
+        <div id="tab-liste" class="tab-content active" data-group="emp">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Effectif — SMBSA Ezahra</h3>
+              <div class="flex gap-8">
+                <div class="search-bar"><i class="ri-search-line"></i><input placeholder="Rechercher..."></div>
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-emp')"><i class="ri-add-line"></i>Nouvel employé</button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-employes"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-paie" class="tab-content" data-group="emp">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Bulletins de paie — Mai 2026</h3>
+              <div class="flex gap-8">
+                <button class="btn btn-light btn-sm"><i class="ri-file-excel-line"></i>Export CNSS</button>
+                <button class="btn btn-primary btn-sm"><i class="ri-play-circle-line"></i>Générer tous</button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead><tr><th>Employé</th><th>Poste</th><th>Salaire brut</th><th>CNSS (salarié 9,18%)</th><th>IRPP</th><th>Net à payer</th><th>Bulletin</th></tr></thead>
+                <tbody>
+                  ${MOCK.employes.map(e => {
+                    const cnss = (e.salaire * 0.0918).toFixed(3);
+                    const irpp = (e.salaire > 1000 ? (e.salaire - 1000) * 0.10 : 0).toFixed(3);
+                    const net = (e.salaire - parseFloat(cnss) - parseFloat(irpp)).toFixed(3);
+                    return `<tr>
+                      <td class="font-semi">${e.nom}</td>
+                      <td class="text-muted text-sm">${e.poste}</td>
+                      <td>${fmtInt(e.salaire)} TND</td>
+                      <td class="text-danger">${cnss} TND</td>
+                      <td class="text-danger">${irpp} TND</td>
+                      <td class="text-success font-semi">${net} TND</td>
+                      <td><button class="btn btn-xs btn-light"><i class="ri-printer-line"></i>PDF</button></td>
+                    </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-cnss" class="tab-content" data-group="emp">
+          <div class="card-body">
+            <div class="alert alert-success mb-16"><i class="ri-check-line"></i>Déclaration CNSS Mai 2026 prête — échéance le 15/06/2026</div>
+            <div class="form-grid-2 mb-16">
+              <div class="card" style="padding:14px">
+                <div class="text-muted text-sm mb-4">Part salariale (9,18%)</div>
+                <div style="font-size:20px;font-weight:700;">966,594 TND</div>
+              </div>
+              <div class="card" style="padding:14px">
+                <div class="text-muted text-sm mb-4">Part patronale (16,57%)</div>
+                <div style="font-size:20px;font-weight:700;">1 745,271 TND</div>
+              </div>
+            </div>
+            <button class="btn btn-primary"><i class="ri-download-line"></i>Télécharger déclaration CNSS</button>
+          </div>
+        </div>
+
+        <div id="tab-conges" class="tab-content" data-group="emp">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Congés — Mai 2026</h3>
+              <button class="btn btn-primary btn-sm"><i class="ri-add-line"></i>Demande congé</button>
+            </div>
+            <table>
+              <thead><tr><th>Employé</th><th>Type</th><th>Du</th><th>Au</th><th>Jours</th><th>Statut</th></tr></thead>
+              <tbody>
+                <tr><td class="font-semi">Jbeli Kamel</td><td>Congé annuel</td><td>18/05/2026</td><td>28/05/2026</td><td>8</td><td><span class="badge badge-success">approuvé</span></td></tr>
+                <tr><td class="font-semi">Hamdi Sonia</td><td>Congé maladie</td><td>10/05/2026</td><td>12/05/2026</td><td>3</td><td><span class="badge badge-success">approuvé</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ajout employé -->
+<div class="modal-overlay" id="modal-emp">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouvel employé</h3>
+      <button class="modal-close" onclick="closeModal('modal-emp')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Nom & Prénom</label><input class="form-control" placeholder="Ex: Ben Ali Mohamed"></div>
+        <div class="form-group"><label class="form-label">CIN</label><input class="form-control" placeholder="12345678"></div>
+        <div class="form-group"><label class="form-label">Poste</label><input class="form-control" placeholder="Collecteur, Comptable..."></div>
+        <div class="form-group"><label class="form-label">Département</label><select class="form-control"><option>Collecte</option><option>Comptabilité</option><option>Magasin</option><option>Direction</option></select></div>
+        <div class="form-group"><label class="form-label">Type contrat</label><select class="form-control"><option>CDI</option><option>CDD</option><option>SIVP</option></select></div>
+        <div class="form-group"><label class="form-label">Salaire brut (TND)</label><input class="form-control" type="number" placeholder="950"></div>
+        <div class="form-group"><label class="form-label">Date embauche</label><input class="form-control" type="date" value="2026-06-01"></div>
+        <div class="form-group"><label class="form-label">N° CNSS</label><input class="form-control" placeholder="xxx xxx xxx"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-emp')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-emp')"><i class="ri-save-line"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById('sidebar-container').innerHTML = buildSidebar('employes');
+  document.getElementById('header-container').innerHTML = buildHeader('Gestion des employés & Paie', { name: 'Admin Système', initials: 'AS' });
+  initTabs();
+
+  document.getElementById('tbl-employes').innerHTML = `
+    <thead><tr><th>Nom & Prénom</th><th>Poste</th><th>Département</th><th>Contrat</th><th>Salaire brut</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody>
+      ${MOCK.employes.map(e => `<tr>
+        <td>
+          <div class="flex-center gap-8">
+            <div class="user-avatar" style="background:var(--primary-light);font-size:10px;width:28px;height:28px">${e.nom.split(' ').map(n=>n[0]).join('')}</div>
+            <span class="font-semi">${e.nom}</span>
+          </div>
+        </td>
+        <td>${e.poste}</td>
+        <td><span class="chip" style="font-size:11px">${e.dept}</span></td>
+        <td>${e.contrat}</td>
+        <td class="font-semi">${fmtInt(e.salaire)} TND</td>
+        <td>${badgeStatut(e.statut)}</td>
+        <td>
+          <div class="flex gap-8">
+            <button class="btn btn-xs btn-light"><i class="ri-edit-line"></i></button>
+            <button class="btn btn-xs btn-light"><i class="ri-printer-line"></i></button>
+          </div>
+        </td>
+      </tr>`).join('')}
+    </tbody>`;
+</script>
+</body>
+</html>

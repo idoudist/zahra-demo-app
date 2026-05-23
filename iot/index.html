@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supervision IoT Silos — SMBSA Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    .iot-bg { background: #0b1929; min-height: 100vh; }
+    .iot-header { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .iot-logo { font-size: 18px; font-weight: 700; color: white; letter-spacing: 2px; }
+    .iot-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4ade80; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.2)} }
+    .iot-body { padding: 24px; }
+    .iot-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .iot-kpi { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; }
+    .iot-kpi-label { font-size: 10.5px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .iot-kpi-value { font-size: 24px; font-weight: 700; color: white; }
+    .iot-kpi-unit { font-size: 13px; color: rgba(255,255,255,0.5); margin-left: 3px; }
+    .iot-kpi-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+    .silos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+    .silo-panel { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; }
+    .silo-panel.alerte { border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.04); }
+    .silo-panel.plein { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.04); }
+    .silo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .silo-name { font-size: 15px; font-weight: 700; color: white; }
+    .silo-culture { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .badge-iot { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-normal { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .badge-alerte { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .badge-plein { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .silo-gauge-container { display: flex; justify-content: center; margin-bottom: 20px; }
+    .silo-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .silo-metric { text-align: center; padding: 10px; background: rgba(255,255,255,0.04); border-radius: 8px; }
+    .silo-metric-value { font-size: 17px; font-weight: 700; color: white; }
+    .silo-metric-label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .silo-footer { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.35); padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .mini-chart { display: flex; align-items: flex-end; gap: 3px; height: 32px; }
+    .mini-bar { flex: 1; border-radius: 2px 2px 0 0; transition: height 0.3s; }
+    .iot-section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 20px; }
+    .iot-section-header { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; }
+    .iot-section-title { font-size: 14px; font-weight: 600; color: white; }
+    .iot-section-body { padding: 16px 18px; }
+    .iot-table { width: 100%; border-collapse: collapse; }
+    .iot-table th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .iot-table td { padding: 10px 12px; font-size: 12.5px; color: rgba(255,255,255,0.75); border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .iot-table tr:last-child td { border-bottom: none; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: rgba(255,255,255,0.7); font-size: 13px; text-decoration: none; transition: all 0.15s; }
+    .back-link:hover { background: rgba(255,255,255,0.1); color: white; }
+  </style>
+</head>
+<body class="iot-bg">
+
+  <!-- Header -->
+  <div class="iot-header">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div>
+        <div class="iot-logo">DropWise <span style="font-size:13px;font-weight:400;opacity:0.5;letter-spacing:1px">IoT</span></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:1px">SMBSA Ezahra — Supervision silos</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div class="iot-status">
+        <span class="pulse"></span>
+        Temps réel — 22/05/2026 08:44
+      </div>
+      <a href="../index.html" class="back-link"><i class="ri-arrow-left-line"></i>Retour accueil</a>
+    </div>
+  </div>
+
+  <div class="iot-body">
+
+    <!-- KPIs IoT -->
+    <div class="iot-kpi-grid">
+      <div class="iot-kpi">
+        <div class="iot-kpi-label">Silos supervisés</div>
+        <div class="iot-kpi-value">3 <span class="iot-kpi-unit">silos</span></div>
+        <div class="iot-kpi-sub">Raspberry Pi 5 — LoRa 868 MHz</div>
+      </div>
+      <div class="iot-kpi">
+        <div class="iot-kpi-label">Masse totale stockée</div>
+        <div class="iot-kpi-value" id="total-masse">— <span class="iot-kpi-unit">t</span></div>
+        <div class="iot-kpi-sub">3 silos combinés</div>
+      </div>
+      <div class="iot-kpi" style="border-color:rgba(251,191,36,0.3)">
+        <div class="iot-kpi-label">Alertes actives</div>
+        <div class="iot-kpi-value" style="color:#fbbf24">1 <span class="iot-kpi-unit" style="color:rgba(255,255,255,0.5)">alerte</span></div>
+        <div class="iot-kpi-sub" style="color:#fbbf24">Silo B — niveau bas</div>
+      </div>
+      <div class="iot-kpi">
+        <div class="iot-kpi-label">Capteurs opérationnels</div>
+        <div class="iot-kpi-value" style="color:#4ade80">6 <span class="iot-kpi-unit">/ 6</span></div>
+        <div class="iot-kpi-sub">2 capteurs × 3 silos</div>
+      </div>
+    </div>
+
+    <!-- Silos -->
+    <div class="silos-grid" id="silos-container"></div>
+
+    <!-- Alertes + Historique -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <div class="iot-section">
+        <div class="iot-section-header">
+          <div class="iot-section-title"><i class="ri-alarm-warning-line" style="color:#fbbf24"></i> &nbsp;Alertes actives</div>
+          <span class="badge-iot badge-alerte">1 active</span>
+        </div>
+        <div class="iot-section-body">
+          <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:14px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+              <div style="font-size:13px;font-weight:600;color:#fbbf24">⚠ Niveau bas — Silo B</div>
+              <span style="font-size:10px;color:rgba(255,255,255,0.35)">08:43</span>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6)">Blé dur : niveau à 38% (seuil : 30%). Planifier réapprovisionnement.</div>
+          </div>
+          <div style="background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.15);border-radius:8px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:13px;color:rgba(74,222,128,0.8)">✓ Silos A et C — niveaux normaux</div>
+              <span style="font-size:10px;color:rgba(255,255,255,0.35)">08:44</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="iot-section">
+        <div class="iot-section-header">
+          <div class="iot-section-title"><i class="ri-history-line"></i> &nbsp;Dernières mesures</div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.35)">Intervalle : 15 min</span>
+        </div>
+        <div class="iot-section-body">
+          <table class="iot-table">
+            <thead><tr><th>Heure</th><th>Silo</th><th>Niveau</th><th>Masse</th><th>Temp.</th></tr></thead>
+            <tbody>
+              <tr><td>08:44</td><td>Silo C — Maïs</td><td style="color:#60a5fa">91%</td><td>595 t</td><td>21.8°C</td></tr>
+              <tr><td>08:43</td><td style="color:#fbbf24">Silo B — Blé</td><td style="color:#fbbf24">38%</td><td>243 t</td><td>22.0°C</td></tr>
+              <tr><td>08:42</td><td>Silo A — Orge</td><td style="color:#4ade80">72%</td><td>518 t</td><td>21.5°C</td></tr>
+              <tr><td>08:29</td><td>Silo C — Maïs</td><td style="color:#60a5fa">91%</td><td>595 t</td><td>21.7°C</td></tr>
+              <tr><td>08:28</td><td>Silo B — Blé</td><td style="color:#fbbf24">38%</td><td>243 t</td><td>22.1°C</td></tr>
+              <tr><td>08:27</td><td>Silo A — Orge</td><td style="color:#4ade80">72%</td><td>519 t</td><td>21.6°C</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="margin-top:20px;text-align:center;font-size:11px;color:rgba(255,255,255,0.2)">
+      DropWise Technologie — Supervision IoT Silos — Raspberry Pi 5 + LoRa SX1262 + ESP32 — Passerelle : 192.168.1.50
+    </div>
+
+  </div>
+
+<script src="../js/mock.js"></script>
+<script>
+  const colors = { normal: '#4ade80', bas: '#fbbf24', plein: '#60a5fa', alerte: '#f87171' };
+  const barColors = { normal: '#22c55e', bas: '#f59e0b', plein: '#3b82f6' };
+
+  function siloGaugeSVG(pct, statut) {
+    const W = 90, H = 160;
+    const bodyTop = 20, bodyH = 120, bodyW = 70, bodyX = (W-bodyW)/2;
+    const fillH = Math.round(bodyH * pct / 100);
+    const fillY = bodyTop + bodyH - fillH;
+    const col = barColors[statut] || '#22c55e';
+    const coneTipW = 30, coneTipX = (W-coneTipW)/2;
+    return `<svg width="${W}" height="${H+30}" viewBox="0 0 ${W} ${H+30}">
+      <!-- Silo body -->
+      <rect x="${bodyX}" y="${bodyTop}" width="${bodyW}" height="${bodyH}" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+      <!-- Fill level -->
+      <clipPath id="clip${pct}${statut}"><rect x="${bodyX+1}" y="${bodyTop+1}" width="${bodyW-2}" height="${bodyH-2}" rx="3"/></clipPath>
+      <rect x="${bodyX+1}" y="${fillY}" width="${bodyW-2}" height="${fillH}" fill="${col}" opacity="0.7" clip-path="url(#clip${pct}${statut})"/>
+      <!-- Fill gradient top -->
+      <rect x="${bodyX+1}" y="${fillY}" width="${bodyW-2}" height="6" fill="white" opacity="0.15" clip-path="url(#clip${pct}${statut})"/>
+      <!-- Grid lines -->
+      ${[25,50,75].map(p => {
+        const ly = bodyTop + bodyH - Math.round(bodyH * p / 100);
+        return `<line x1="${bodyX+2}" y1="${ly}" x2="${bodyX+bodyW-2}" y2="${ly}" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="3,3"/>
+                <text x="${bodyX-4}" y="${ly+4}" font-size="8" fill="rgba(255,255,255,0.25)" text-anchor="end">${p}%</text>`;
+      }).join('')}
+      <!-- Percentage text -->
+      <text x="${W/2}" y="${bodyTop + bodyH/2 + (fillH > 60 ? 4 : -10)}" font-size="18" font-weight="700" fill="${fillH > 40 ? 'white' : col}" text-anchor="middle">${pct}%</text>
+      <!-- Cone bottom (outlet) -->
+      <polygon points="${bodyX},${bodyTop+bodyH} ${bodyX+bodyW},${bodyTop+bodyH} ${coneTipX+coneTipW},${bodyTop+bodyH+18} ${coneTipX},${bodyTop+bodyH+18}" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <!-- Top cap -->
+      <rect x="${bodyX+10}" y="${bodyTop-8}" width="${bodyW-20}" height="10" rx="2" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+      <!-- Sensor dots -->
+      <circle cx="${bodyX+12}" cy="${bodyTop+8}" r="3" fill="${col}" opacity="0.8"/>
+      <circle cx="${bodyX+bodyW-12}" cy="${bodyTop+8}" r="3" fill="${col}" opacity="0.8"/>
+    </svg>`;
+  }
+
+  const container = document.getElementById('silos-container');
+  let totalMasse = 0;
+
+  MOCK.silos.forEach(silo => {
+    totalMasse += silo.masse;
+    const panelClass = silo.statut === 'bas' ? 'alerte' : silo.statut === 'plein' ? 'plein' : '';
+    const badgeClass = silo.statut === 'bas' ? 'badge-alerte' : silo.statut === 'plein' ? 'badge-plein' : 'badge-normal';
+    const badgeLabel = silo.statut === 'bas' ? '⚠ Niveau bas' : silo.statut === 'plein' ? '● Plein' : '✓ Normal';
+
+    const histMax = Math.max(...silo.historique);
+    const miniChart = `<div class="mini-chart">${silo.historique.map(v => {
+      const h = Math.round((v/histMax)*32);
+      return `<div class="mini-bar" style="height:${h}px;background:${barColors[silo.statut]};opacity:0.6"></div>`;
+    }).join('')}</div>`;
+
+    const div = document.createElement('div');
+    div.className = `silo-panel ${panelClass}`;
+    div.innerHTML = `
+      <div class="silo-header">
+        <div>
+          <div class="silo-name">${silo.nom}</div>
+          <div class="silo-culture">${silo.culture} · Capacité ${silo.capacite} m³</div>
+        </div>
+        <span class="badge-iot ${badgeClass}">${badgeLabel}</span>
+      </div>
+      <div class="silo-gauge-container">${siloGaugeSVG(silo.niveau, silo.statut)}</div>
+      <div class="silo-metrics">
+        <div class="silo-metric">
+          <div class="silo-metric-value">${silo.volume} <span style="font-size:11px;color:rgba(255,255,255,0.4)">m³</span></div>
+          <div class="silo-metric-label">Volume</div>
+        </div>
+        <div class="silo-metric">
+          <div class="silo-metric-value">${silo.masse} <span style="font-size:11px;color:rgba(255,255,255,0.4)">t</span></div>
+          <div class="silo-metric-label">Masse</div>
+        </div>
+        <div class="silo-metric">
+          <div class="silo-metric-value" style="font-size:13px">${silo.temperature}°C</div>
+          <div class="silo-metric-label">Temp.</div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Tendance 7j ${miniChart ? '' : ''}</div>
+        ${miniChart}
+      </div>
+      <div class="silo-footer">
+        <span><i class="ri-wifi-line"></i> LoRa — ESP32</span>
+        <span>H : ${silo.humidite}%</span>
+        <span>${silo.derniereMesure}</span>
+      </div>`;
+    container.appendChild(div);
+  });
+
+  document.getElementById('total-masse').innerHTML = `${totalMasse} <span class="iot-kpi-unit">t</span>`;
+</script>
+</body>
+</html>

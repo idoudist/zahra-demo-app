@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utilisateurs — ERP Ezahra</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div id="header-container"></div>
+    <div class="page-body">
+
+      <div class="kpi-grid mb-24" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card blue"><i class="ri-shield-user-fill kpi-icon"></i><div class="kpi-label">Utilisateurs actifs</div><div class="kpi-value">5</div><div class="kpi-sub">Tous connectés ce mois</div></div>
+        <div class="kpi-card green"><i class="ri-key-fill kpi-icon"></i><div class="kpi-label">Rôles définis</div><div class="kpi-value">4</div><div class="kpi-sub">Admin, Comptable, Collecteur, Magasinier</div></div>
+        <div class="kpi-card orange"><i class="ri-history-fill kpi-icon"></i><div class="kpi-label">Événements audit</div><div class="kpi-value">128 <span class="kpi-unit">ce mois</span></div><div class="kpi-sub">Aucune anomalie détectée</div></div>
+        <div class="kpi-card purple"><i class="ri-lock-fill kpi-icon"></i><div class="kpi-label">Tentatives échouées</div><div class="kpi-value">0</div><div class="kpi-sub">Aucun verrouillage</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding-bottom:0">
+          <div class="tabs" data-group="usr">
+            <div class="tab active" data-group="usr" data-target="tab-users"><i class="ri-team-line"></i>Utilisateurs</div>
+            <div class="tab" data-group="usr" data-target="tab-roles"><i class="ri-shield-line"></i>Rôles & Permissions</div>
+            <div class="tab" data-group="usr" data-target="tab-audit"><i class="ri-history-line"></i>Journal d'audit</div>
+          </div>
+        </div>
+
+        <div id="tab-users" class="tab-content active" data-group="usr">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Comptes utilisateurs</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-user')"><i class="ri-add-line"></i>Créer compte</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-users"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-roles" class="tab-content" data-group="usr">
+          <div class="card-body">
+            <div class="section-header"><h3>Rôles & droits d'accès</h3></div>
+            <table>
+              <thead><tr><th>Rôle</th><th>Collecte</th><th>Ventes</th><th>Achats</th><th>Stocks</th><th>Comptabilité</th><th>Employés</th><th>Utilisateurs</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-danger">Administrateur</span></td>
+                  <td class="text-center text-success">✓ Tout</td><td class="text-center text-success">✓ Tout</td><td class="text-center text-success">✓ Tout</td>
+                  <td class="text-center text-success">✓ Tout</td><td class="text-center text-success">✓ Tout</td><td class="text-center text-success">✓ Tout</td><td class="text-center text-success">✓ Tout</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info">Comptable</span></td>
+                  <td class="text-center text-muted">Lecture</td><td class="text-center text-success">✓ Tout</td><td class="text-center text-success">✓ Tout</td>
+                  <td class="text-center text-muted">Lecture</td><td class="text-center text-success">✓ Tout</td><td class="text-center text-muted">Lecture</td><td class="text-center text-danger">✗</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-primary">Collecteur</span></td>
+                  <td class="text-center text-success">✓ Saisie</td><td class="text-center text-danger">✗</td><td class="text-center text-danger">✗</td>
+                  <td class="text-center text-danger">✗</td><td class="text-center text-danger">✗</td><td class="text-center text-danger">✗</td><td class="text-center text-danger">✗</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-secondary">Magasinier</span></td>
+                  <td class="text-center text-danger">✗</td><td class="text-center text-danger">✗</td><td class="text-center text-muted">Lecture</td>
+                  <td class="text-center text-success">✓ Tout</td><td class="text-center text-danger">✗</td><td class="text-center text-danger">✗</td><td class="text-center text-danger">✗</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tab-audit" class="tab-content" data-group="usr">
+          <div class="card-body">
+            <div class="section-header">
+              <h3>Journal d'audit — Qui a fait quoi et quand</h3>
+              <div class="search-bar"><i class="ri-search-line"></i><input placeholder="Filtrer par utilisateur..."></div>
+            </div>
+            <div class="table-wrapper">
+              <table id="tbl-audit"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal créer utilisateur -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Créer un compte utilisateur</h3>
+      <button class="modal-close" onclick="closeModal('modal-user')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Nom & Prénom</label><input class="form-control"></div>
+        <div class="form-group"><label class="form-label">Identifiant (login)</label><input class="form-control" placeholder="prenom.nom"></div>
+        <div class="form-group"><label class="form-label">Rôle</label><select class="form-control"><option>Administrateur</option><option>Comptable</option><option>Collecteur</option><option>Magasinier</option><option>Assistante</option></select></div>
+        <div class="form-group"><label class="form-label">Employé lié</label><select class="form-control"><option>— Sélectionner —</option><option>Khediri Moncef</option><option>Hamdi Sonia</option></select></div>
+        <div class="form-group"><label class="form-label">Mot de passe temporaire</label><input class="form-control" type="password" placeholder="••••••••"></div>
+        <div class="form-group"><label class="form-label">Confirmer MDP</label><input class="form-control" type="password" placeholder="••••••••"></div>
+      </div>
+      <div class="alert alert-info mt-8">
+        <i class="ri-information-line"></i>L'utilisateur devra changer son mot de passe à la première connexion.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" onclick="closeModal('modal-user')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-user')"><i class="ri-save-line"></i>Créer le compte</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/mock.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById('sidebar-container').innerHTML = buildSidebar('utilisateurs');
+  document.getElementById('header-container').innerHTML = buildHeader('Sécurité & Gestion des utilisateurs', { name: 'Admin Système', initials: 'AS' });
+  initTabs();
+
+  document.getElementById('tbl-users').innerHTML = `
+    <thead><tr><th>Nom</th><th>Login</th><th>Rôle</th><th>Dernière connexion</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody>
+      ${MOCK.utilisateurs.map(u => `<tr>
+        <td>
+          <div class="flex-center gap-8">
+            <div class="user-avatar" style="width:28px;height:28px;font-size:10px;background:var(--primary-light)">${u.nom.split(' ').map(n=>n[0]).join('')}</div>
+            <span class="font-semi">${u.nom}</span>
+          </div>
+        </td>
+        <td class="text-muted"><code style="background:#f8fafc;padding:2px 6px;border-radius:3px;font-size:12px">${u.login}</code></td>
+        <td>${u.role === 'Administrateur' ? '<span class="badge badge-danger">'+u.role+'</span>' : u.role === 'Comptable' ? '<span class="badge badge-info">'+u.role+'</span>' : u.role === 'Collecteur' ? '<span class="badge badge-primary">'+u.role+'</span>' : '<span class="badge badge-secondary">'+u.role+'</span>'}</td>
+        <td class="text-muted text-sm">${u.dernierConnex}</td>
+        <td>${badgeStatut(u.statut)}</td>
+        <td>
+          <div class="flex gap-8">
+            <button class="btn btn-xs btn-light"><i class="ri-edit-line"></i></button>
+            <button class="btn btn-xs btn-light"><i class="ri-lock-line"></i>MDP</button>
+            ${u.login !== 'admin' ? '<button class="btn btn-xs btn-danger">Désactiver</button>' : ''}
+          </div>
+        </td>
+      </tr>`).join('')}
+    </tbody>`;
+
+  document.getElementById('tbl-audit').innerHTML = `
+    <thead><tr><th>Date & Heure</th><th>Utilisateur</th><th>Action</th><th>Module</th></tr></thead>
+    <tbody>
+      ${MOCK.audit.map(a => `<tr>
+        <td class="text-muted text-sm">${a.date}</td>
+        <td><code style="background:#f8fafc;padding:2px 6px;border-radius:3px;font-size:12px">${a.utilisateur}</code></td>
+        <td>${a.action}</td>
+        <td><span class="chip" style="font-size:11px">${a.module}</span></td>
+      </tr>`).join('')}
+    </tbody>`;
+</script>
+</body>
+</html>
