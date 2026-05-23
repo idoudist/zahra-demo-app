@@ -684,3 +684,129 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 .role-icon.iot { background: #f3e8ff; color: var(--purple); }
 .role-name { font-size: 13.5px; font-weight: 600; }
 .role-desc { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+
+/* ===== MOBILE — HAMBURGER & OVERLAY ===== */
+.btn-hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: white;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.btn-hamburger:hover { background: var(--bg); }
+
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+body.sidebar-open .sidebar-overlay { display: block; }
+
+.sidebar-close-btn {
+  display: none;
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  border-radius: 50%;
+  color: rgba(255,255,255,0.8);
+  font-size: 16px;
+  cursor: pointer;
+  align-items: center; justify-content: center;
+  line-height: 1;
+}
+.sidebar-close-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* ===== RESPONSIVE — TABLET & MOBILE (≤ 900px) ===== */
+@media (max-width: 900px) {
+
+  /* Sidebar: slide-in overlay */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+
+  .sidebar-close-btn { display: flex; }
+  .sidebar-logo { position: relative; padding-right: 44px; }
+
+  /* Main no longer offset by sidebar */
+  .main-content { margin-left: 0 !important; }
+
+  /* Show hamburger */
+  .btn-hamburger { display: flex; }
+
+  /* Reduce padding */
+  .page-body { padding: 14px; }
+  .top-header { padding: 0 14px; }
+
+  /* KPI 2 columns */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Forms: single column */
+  .form-grid-2,
+  .form-grid-3,
+  .form-grid-4 { grid-template-columns: 1fr !important; }
+
+  /* Tabs: horizontal scroll */
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .tab { flex-shrink: 0; padding: 9px 13px; font-size: 12px; }
+
+  /* Modals: full width, scrollable */
+  .modal {
+    width: calc(100vw - 20px) !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Section header: stack */
+  .section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+  /* Grid utilities */
+  .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+
+  /* Agriculteurs: stack panels */
+  .agri-layout { grid-template-columns: 1fr !important; }
+  .agri-list-panel { position: static !important; }
+  #agri-list { max-height: 280px !important; }
+
+  /* Compte summary: 2 cols */
+  .compte-summary { grid-template-columns: 1fr 1fr !important; }
+
+  /* Page title */
+  .page-title { font-size: 14px; }
+
+  /* Tables: force scroll wrapper */
+  .card .table-wrapper,
+  .card > table,
+  [style*="overflow-x: auto"] { overflow-x: auto; }
+}
+
+/* ===== RESPONSIVE — SMALL MOBILE (≤ 480px) ===== */
+@media (max-width: 480px) {
+
+  /* KPI single column */
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .kpi-value { font-size: 22px; }
+
+  /* Hide search & notification buttons to save space */
+  .header-btn { display: none; }
+
+  /* Reduce body padding */
+  .page-body { padding: 10px; }
+
+  /* Smaller modal */
+  .modal { width: calc(100vw - 12px) !important; }
+
+  /* form span-2 becomes span-1 */
+  [style*="grid-column:span 2"],
+  [style*="grid-column: span 2"] { grid-column: span 1 !important; }
+}

@@ -634,22 +634,40 @@ LotArticle
 
 ---
 
-## 6. Hors périmètre
+## 6. Périmètre ajusté & hors périmètre
 
-Les fonctionnalités suivantes ont été explicitement exclues du présent projet :
+### 6.1 Fonctionnalités incluses (ajouts post-CDC initial)
+
+Les fonctionnalités suivantes ont été intégrées au périmètre après validation client :
+
+| Module | Décision | Rattachement |
+|--------|----------|--------------|
+| **Gestion des agriculteurs** (fiche complète, compte courant, historique collecte par agriculteur, achats nutriments, correction quantité) | ✅ Inclus dans A2 | Module A2 — Collecte de lait |
+| **Services Zahra basiques** (enregistrement des interventions : consultations, vaccinations, inséminations, traitements, analyses) | ✅ Inclus dans A2 — suivi simple, pas de logiciel vétérinaire dédié | Module A2 — Collecte de lait |
+| **Rapports collecte par secteur** (diagrammes Chart.js : barres matin/soir, doughnut répartition, courbe évolution 7 jours) | ✅ Inclus dans A2 | Module A2 — Collecte de lait |
+| **Correction de pesée avec motif** (modal d'audit : quantité actuelle → nouvelle quantité, motif obligatoire, tracé journal) | ✅ Inclus dans A2 — règle R1 | Module A2 — Collecte de lait |
+| **Interface web responsive** (ERP accessible smartphone et tablette, menu hamburger mobile) | ✅ Inclus sans surcoût | Transverse |
+
+> ✅ **Décision** : Les services vétérinaires sont inclus sous la forme d'un **enregistrement d'interventions simple** (type, technicien, coût, statut), rattaché à la fiche agriculteur. Il ne s'agit **pas** d'un logiciel vétérinaire dédié (dossiers cliniques, ordonnances, pharmacie) — cela reste hors périmètre.
+
+---
+
+### 6.2 Fonctionnalités hors périmètre
+
+Les fonctionnalités suivantes sont explicitement exclues du présent projet :
 
 | Module | Raison de l'exclusion |
 |--------|-----------------------|
 | Gestion de la production usine | Hors périmètre décidé |
 | Capteurs IoT (supervision silos) | Géré séparément par DropWise — devis séparé |
 | Parc véhicules et kiosque carburant | Hors périmètre décidé |
-| Services vétérinaires | Hors périmètre décidé |
+| **Logiciel vétérinaire dédié** (dossiers cliniques, ordonnances, pharmacie animale) | Hors périmètre — enregistrement simple inclus dans A2 |
 | Site vitrine public | Hors périmètre décidé |
 | Notifications SMS/email automatiques | Hors périmètre décidé |
-| Application mobile native | Application web responsive suffisante |
+| Application mobile native (iOS / Android) | Application web responsive suffisante |
 | Hébergement cloud | Déploiement local uniquement |
-| Module CRM agriculteurs avancé (mutuelle, capital) | Hors périmètre décidé |
-| Gestion des votes / assemblées | Hors périmètre |
+| **Module mutuelle avancé** (capital social, parts sociales, remboursements mutualistes) | Hors périmètre — gestion compte courant simple incluse dans A2 |
+| Gestion des votes / assemblées générales | Hors périmètre |
 | Intelligence artificielle / prédictions | Hors périmètre |
 
 > 🔄 Ces modules peuvent faire l'objet d'une Phase 2 — à discuter après GO-LIVE.

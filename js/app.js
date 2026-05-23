@@ -33,8 +33,9 @@ function buildSidebar(active) {
   ];
 
   let html = `
-    <aside class="sidebar">
+    <aside class="sidebar" id="main-sidebar">
       <div class="sidebar-logo">
+        <button class="sidebar-close-btn" onclick="window.closeSidebar()" title="Fermer menu">✕</button>
         <div class="logo-name">DropWise</div>
         <div class="logo-sub">Solutions IoT Agricoles</div>
         <div class="logo-client"><i class="ri-building-2-line"></i> SMBSA Ezahra</div>
@@ -61,7 +62,8 @@ function buildSidebar(active) {
         <div style="margin-top:3px">drop.wise@outlook.com</div>
         <div style="margin-top:3px">CDC-EZAHRA-DW-2026</div>
       </div>
-    </aside>`;
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="window.closeSidebar()"></div>`;
   return html;
 }
 
@@ -91,6 +93,9 @@ function buildHeader(title) {
 
   return `
     <header class="top-header">
+      <button class="btn-hamburger" onclick="window.openSidebar()" title="Menu">
+        <i class="ri-menu-line"></i>
+      </button>
       <span class="page-title">${title}</span>
       <div class="header-actions">
         <button class="header-btn" title="Recherche"><i class="ri-search-line"></i></button>
@@ -139,6 +144,17 @@ function buildHeader(title) {
       </div>
     </header>`;
 }
+
+// ===== MOBILE SIDEBAR =====
+window.openSidebar = function() { document.body.classList.add('sidebar-open'); };
+window.closeSidebar = function() { document.body.classList.remove('sidebar-open'); };
+
+// Close sidebar on nav link click (mobile)
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.sidebar-nav a') && window.innerWidth <= 900) {
+    window.closeSidebar();
+  }
+});
 
 // ===== ROLE SWITCHER LOGIC =====
 window.toggleRoleDropdown = function() {
